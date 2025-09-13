@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import HeroBanner from '@/components/home/HeroBanner';
 import ContentSection from '@/components/home/ContentSection';
 import ContinueWatchingSection from '@/components/home/ContinueWatchingSection';
+import XPNotification from '@/components/gamification/XPNotification';
+import WelcomeBackScreen from '@/components/gamification/WelcomeBackScreen';
 
 interface HomeProps {
   userPreferences: {
@@ -13,12 +15,25 @@ interface HomeProps {
     contentTypes: string[];
     allowLocation: boolean;
   };
+  onNavigateToProfile?: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ userPreferences }) => {
+const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile }) => {
   // State for actual watched content - only show continue watching if user has watched something
   const [continueWatchingItems, setContinueWatchingItems] = useState<any[]>([]);
   const [currentlyWatching, setCurrentlyWatching] = useState<Set<string>>(new Set());
+  
+  // Gamification state
+  const [userXP, setUserXP] = useState(1240);
+  const [showXPNotification, setShowXPNotification] = useState<{
+    show: boolean;
+    amount: number;
+    reason: string;
+    type: 'content_completion' | 'engagement' | 'streak' | 'discovery' | 'milestone';
+  }>({ show: false, amount: 0, reason: '', type: 'content_completion' });
+  
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+  const [returningUser] = useState(Math.random() > 0.7); // 30% chance for demo
 
   // Mock movie posters - using placeholder images that represent different content types
   const getImageUrl = (title: string, language?: string) => {
@@ -97,6 +112,17 @@ const Home: React.FC<HomeProps> = ({ userPreferences }) => {
 
   const handleItemPlay = (item: any) => {
     console.log('Play item:', item);
+    
+    // Add XP for content completion
+    const xpAmount = item.isPremium ? 25 : 20;
+    setUserXP(prev => prev + xpAmount);
+    setShowXPNotification({
+      show: true,
+      amount: xpAmount,
+      reason: `Completed '${item.title}'`,
+      type: 'content_completion'
+    });
+    
     // Add to continue watching when user starts watching
     if (!currentlyWatching.has(item.id)) {
       const newWatchItem = {
@@ -114,6 +140,16 @@ const Home: React.FC<HomeProps> = ({ userPreferences }) => {
 
   const handleItemWatchlist = (item: any) => {
     console.log('Add to watchlist:', item);
+    
+    // Add XP for engagement
+    const xpAmount = 5;
+    setUserXP(prev => prev + xpAmount);
+    setShowXPNotification({
+      show: true,
+      amount: xpAmount,
+      reason: 'Added to watchlist',
+      type: 'engagement'
+    });
   };
 
   const handleContinueWatching = (item: any) => {
@@ -154,9 +190,18 @@ const Home: React.FC<HomeProps> = ({ userPreferences }) => {
               <Button size="icon" variant="ghost" className="text-muted-foreground">
                 <Search className="w-5 h-5" />
               </Button>
-              <Button size="icon" variant="ghost" className="text-muted-foreground">
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="text-muted-foreground relative"
+                onClick={onNavigateToProfile}
+              >
                 <div className="w-8 h-8 bg-sonyliv-primary/20 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-sonyliv-primary" />
+                </div>
+                {/* XP Badge */}
+                <div className="absolute -top-1 -right-1 bg-yellow-500 text-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {Math.floor(userXP / 100)}
                 </div>
               </Button>
             </div>
@@ -253,6 +298,25 @@ const Home: React.FC<HomeProps> = ({ userPreferences }) => {
         {/* Bottom Spacing */}
         <div className="h-8" />
       </div>
+
+      {/* XP Notification */}
+      {showXPNotification.show && (
+        <XPNotification
+          xpAmount={showXPNotification.amount}
+          reason={showXPNotification.reason}
+          type={showXPNotification.type}
+          onComplete={() => setShowXPNotification({ ...showXPNotification, show: false })}
+        />
+      )}
+
+      {/* Welcome Back Screen for Returning Users */}
+      {returningUser && showWelcomeBack && (
+        <WelcomeBackScreen
+          onStartWatching={() => setShowWelcomeBack(false)}
+          onLearnMore={() => console.log('Learn more about premium')}
+          onClose={() => setShowWelcomeBack(false)}
+        />
+      )}
     </div>
   );
 };

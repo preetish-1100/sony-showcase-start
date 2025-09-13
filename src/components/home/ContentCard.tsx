@@ -69,8 +69,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
 
       {/* Premium Badge */}
       {isPremium && (
-        <div className="absolute top-2 left-2 bg-sonyliv-premium text-white text-xs px-2 py-1 rounded-full flex items-center">
-          <Star className="w-3 h-3 mr-1" />
+        <div className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs px-2 py-1 rounded-full flex items-center border-2 border-yellow-300">
+          <Star className="w-3 h-3 mr-1 fill-current" />
           Premium
         </div>
       )}
