@@ -39,11 +39,11 @@ const ContentCard: React.FC<ContentCardProps> = ({
   const getSizeClasses = () => {
     switch (size) {
       case 'small':
-        return 'w-[120px] h-[180px]';
+        return 'w-[110px] h-[160px]';
       case 'large':
-        return 'w-[160px] h-[240px]';
-      default:
         return 'w-[140px] h-[200px]';
+      default:
+        return 'w-[120px] h-[180px]';
     }
   };
 

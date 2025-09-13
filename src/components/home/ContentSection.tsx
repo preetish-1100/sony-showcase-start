@@ -54,28 +54,29 @@ const ContentSection: React.FC<ContentSectionProps> = ({
         />
       </div>
 
-      <ScrollArea className="w-full">
-        <div className="flex space-x-3 px-4 pb-2">
+      <div className="overflow-x-auto">
+        <div className="flex space-x-3 px-4 pb-2 w-max">
           {items.map((item) => (
-            <ContentCard
-              key={item.id}
-              title={item.title}
-              imageUrl={item.imageUrl}
-              duration={item.duration}
-              rating={item.rating}
-              language={item.language}
-              isPremium={item.isPremium}
-              isLive={item.isLive}
-              progress={item.progress}
-              matchPercentage={item.matchPercentage}
-              viewCount={item.viewCount}
-              size={cardSize}
-              onPlay={() => onItemPlay?.(item)}
-              onAddToWatchlist={() => onItemWatchlist?.(item)}
-            />
+            <div key={item.id} className="flex-shrink-0">
+              <ContentCard
+                title={item.title}
+                imageUrl={item.imageUrl}
+                duration={item.duration}
+                rating={item.rating}
+                language={item.language}
+                isPremium={item.isPremium}
+                isLive={item.isLive}
+                progress={item.progress}
+                matchPercentage={item.matchPercentage}
+                viewCount={item.viewCount}
+                size={cardSize}
+                onPlay={() => onItemPlay?.(item)}
+                onAddToWatchlist={() => onItemWatchlist?.(item)}
+              />
+            </div>
           ))}
         </div>
-      </ScrollArea>
+      </div>
     </section>
   );
 };
