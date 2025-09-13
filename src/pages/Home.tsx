@@ -41,7 +41,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // Enhanced movie database with proper posters and metadata
   const movieDatabase = {
     'Pushpa: The Rise': {
-      imageUrl: 'https://via.placeholder.com/300x400/1a1a2e/ffffff?text=Pushpa',
+      imageUrl: 'https://via.placeholder.com/300x400/ff6b35/ffffff?text=Pushpa',
       language: 'Telugu',
       genre: 'action',
       year: 2021,
@@ -86,7 +86,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 26m'
     },
     'Jawan': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMzI2NzY2Nzk3M15BMl5BanBnXkFtZTgwNzI3MzQ2NDM@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/4ecdc4/ffffff?text=Jawan',
       language: 'Hindi',
       genre: 'action',
       year: 2023,
@@ -95,7 +95,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 49m'
     },
     'Gangubai Kathiawadi': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjU3NTE4NjQ1NF5BMl5BanBnXkFtZTgwNjE4NTY2NzM@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/f7b731/ffffff?text=Gangubai',
       language: 'Hindi',
       genre: 'drama',
       year: 2022,
@@ -104,7 +104,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 34m'
     },
     'Brahmastra': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODI1MTA0N2UtYjU2My00MjM4LWFjOGQtNzY5N2Y2N2VjMzE1XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/2c2c54/ffffff?text=Brahmastra',
       language: 'Hindi',
       genre: 'action',
       year: 2022,
@@ -213,8 +213,51 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     }
   };
 
-  const getImageUrl = (title: string) => {
-    return movieDatabase[title]?.imageUrl || 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop';
+  // Helper function to get movie poster component
+  const getMoviePoster = (title: string, className: string = "w-full h-full object-cover rounded-lg") => {
+    const movie = movieDatabase[title as keyof typeof movieDatabase];
+    if (!movie) {
+      return (
+        <div className={`${className} bg-gray-600 flex items-center justify-center text-white font-bold text-lg`}>
+          No Image
+        </div>
+      );
+    }
+
+    // Create a colored poster with movie name
+    const colors = {
+      'Pushpa: The Rise': 'bg-orange-600',
+      'RRR': 'bg-blue-800',
+      'KGF Chapter 2': 'bg-purple-800',
+      'Sooryavanshi': 'bg-red-600',
+      'Pathaan': 'bg-red-500',
+      'Jawan': 'bg-teal-500',
+      'Gangubai Kathiawadi': 'bg-yellow-500',
+      'Brahmastra': 'bg-indigo-800',
+      'Vikram': 'bg-cyan-500',
+      'Beast': 'bg-pink-400',
+      'Jersey': 'bg-blue-500',
+      'Heropanti 2': 'bg-orange-500',
+      'Runway 34': 'bg-gray-700',
+      'Bhool Bhulaiyaa 2': 'bg-red-400',
+      'Jurassic World Dominion': 'bg-blue-600',
+      'Baahubali: The Beginning': 'bg-orange-500',
+      'KGF Chapter 1': 'bg-purple-700',
+      'Ala Vaikunthapurramuloo': 'bg-yellow-400',
+      'Geetha Govindam': 'bg-red-500'
+    };
+
+    const bgColor = colors[title as keyof typeof colors] || 'bg-gray-600';
+    const shortTitle = title.length > 15 ? title.split(' ')[0] : title;
+
+    return (
+      <div className={`${className} ${bgColor} flex items-center justify-center text-white font-bold text-center p-2`}>
+        <div>
+          <div className="text-lg md:text-xl">{shortTitle}</div>
+          {title.includes('Chapter') && <div className="text-sm opacity-80">Chapter</div>}
+        </div>
+      </div>
+    );
   };
 
   // Language-specific content mapping
@@ -403,10 +446,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
                 size="icon" 
                 variant="ghost" 
                 className="text-muted-foreground hover:text-red-500 transition-colors"
-                onClick={() => {
-                  console.log('My List button clicked');
-                  navigate('/mylist');
-                }}
+                onClick={() => navigate('/mylist')}
                 title="My List"
               >
                 <Bookmark className="w-5 h-5" />

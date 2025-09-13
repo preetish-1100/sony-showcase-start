@@ -28,13 +28,36 @@ interface HeroBannerProps {
 const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const getBannerPosterBackground = (movieTitle: string) => {
+    // Create a colored poster with movie name
+    const colors = {
+      'RRR': 'bg-blue-800',
+      'Pushpa: The Rise': 'bg-orange-600',
+      'KGF Chapter 2': 'bg-purple-800',
+      'Pathaan': 'bg-red-500',
+      'Live Cricket': 'bg-green-600'
+    };
+
+    const bgColor = colors[movieTitle as keyof typeof colors] || 'bg-gray-600';
+    const shortTitle = movieTitle.length > 15 ? movieTitle.split(' ')[0] : movieTitle;
+
+    return (
+      <div className={`w-full h-full ${bgColor} flex items-center justify-center text-white font-bold text-center p-8`}>
+        <div>
+          <div className="text-4xl md:text-6xl mb-2">{shortTitle}</div>
+          {movieTitle.includes('Chapter') && <div className="text-xl opacity-80">Chapter</div>}
+        </div>
+      </div>
+    );
+  };
+
   // Enhanced banner items with proper movie posters
   const bannerItems: BannerItem[] = [
     {
       id: '1',
       title: 'RRR',
       description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s.',
-      imageUrl: 'https://via.placeholder.com/800x600/16213e/ffffff?text=RRR',
+      imageUrl: '',
       type: 'movie',
       cta: 'Watch Now',
       rating: 4.5,
@@ -47,7 +70,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
       id: '2',
       title: 'Pushpa: The Rise',
       description: 'A laborer rises through the ranks of a sandalwood smuggling syndicate, making some powerful enemies in the process.',
-      imageUrl: 'https://via.placeholder.com/800x600/1a1a2e/ffffff?text=Pushpa',
+      imageUrl: '',
       type: 'movie',
       cta: 'Watch Now',
       rating: 4.2,
@@ -60,7 +83,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
       id: '3',
       title: 'KGF Chapter 2',
       description: 'Rocky, a young man, seeks power and wealth in order to fulfill a promise to his dying mother.',
-      imageUrl: 'https://via.placeholder.com/800x600/0f3460/ffffff?text=KGF+2',
+      imageUrl: '',
       type: 'movie',
       cta: 'Watch Premium',
       rating: 4.3,
@@ -73,7 +96,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
       id: '4',
       title: 'Pathaan',
       description: 'An Indian spy takes on the leader of a group of mercenaries who have nefarious plans to target India.',
-      imageUrl: 'https://via.placeholder.com/800x600/ff6b6b/ffffff?text=Pathaan',
+      imageUrl: '',
       type: 'movie',
       cta: 'Watch Premium',
       rating: 4.1,
@@ -86,7 +109,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
       id: '5',
       title: 'Live Cricket: India vs Australia',
       description: 'Don\'t miss the thrilling match live from Melbourne Cricket Ground',
-      imageUrl: 'https://via.placeholder.com/800x600/ff9ff3/ffffff?text=Live+Cricket',
+      imageUrl: '',
       type: 'live',
       cta: 'Watch Live',
       rating: 4.8,
@@ -122,14 +145,12 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
     <div className="mb-6">
       <Card className="relative h-[240px] overflow-hidden">
         {/* Background */}
-        <div 
-          className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"
-          style={{
-            backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.5), rgba(0,0,0,0.1)), url(${currentItem.imageUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent">
+          {/* Movie Poster Background */}
+          <div className="absolute inset-0">
+            {getBannerPosterBackground(currentItem.title)}
+          </div>
+        </div>
 
         {/* Content */}
         <div className="relative h-full flex items-center p-6">

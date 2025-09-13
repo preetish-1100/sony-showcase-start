@@ -47,24 +47,51 @@ const ContentCard: React.FC<ContentCardProps> = ({
     }
   };
 
+  const getMoviePosterBackground = (movieTitle: string) => {
+    // Create a colored poster with movie name
+    const colors = {
+      'Pushpa: The Rise': 'bg-orange-600',
+      'RRR': 'bg-blue-800',
+      'KGF Chapter 2': 'bg-purple-800',
+      'Sooryavanshi': 'bg-red-600',
+      'Pathaan': 'bg-red-500',
+      'Jawan': 'bg-teal-500',
+      'Gangubai Kathiawadi': 'bg-yellow-500',
+      'Brahmastra': 'bg-indigo-800',
+      'Vikram': 'bg-cyan-500',
+      'Beast': 'bg-pink-400',
+      'Jersey': 'bg-blue-500',
+      'Heropanti 2': 'bg-orange-500',
+      'Runway 34': 'bg-gray-700',
+      'Bhool Bhulaiyaa 2': 'bg-red-400',
+      'Jurassic World Dominion': 'bg-blue-600',
+      'Baahubali: The Beginning': 'bg-orange-500',
+      'KGF Chapter 1': 'bg-purple-700',
+      'Ala Vaikunthapurramuloo': 'bg-yellow-400',
+      'Geetha Govindam': 'bg-red-500'
+    };
+
+    const bgColor = colors[movieTitle as keyof typeof colors] || 'bg-gray-600';
+    const shortTitle = movieTitle.length > 15 ? movieTitle.split(' ')[0] : movieTitle;
+
+    return (
+      <div className={`w-full h-full ${bgColor} flex items-center justify-center text-white font-bold text-center p-2`}>
+        <div>
+          <div className="text-lg md:text-xl">{shortTitle}</div>
+          {movieTitle.includes('Chapter') && <div className="text-sm opacity-80">Chapter</div>}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card className={`${getSizeClasses()} relative overflow-hidden group cursor-pointer hover:scale-105 transition-transform duration-200`}>
       {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
-        style={{
-          backgroundImage: imageUrl ? `url(${imageUrl})` : 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--sonyliv-secondary)) 100%)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
-        {!imageUrl && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-white/50 text-4xl font-bold">
-              {title.charAt(0)}
-            </div>
-          </div>
-        )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
+        {/* Movie Poster Background */}
+        <div className="absolute inset-0">
+          {getMoviePosterBackground(title)}
+        </div>
       </div>
 
       {/* Premium Badge */}

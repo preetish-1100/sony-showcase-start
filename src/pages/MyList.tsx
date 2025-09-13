@@ -31,7 +31,7 @@ const MyList: React.FC = () => {
     {
       id: '1',
       title: 'RRR',
-      imageUrl: 'https://via.placeholder.com/300x400/16213e/ffffff?text=RRR',
+      imageUrl: '',
       duration: '3h 7m',
       rating: 4.5,
       year: 2022,
@@ -44,7 +44,7 @@ const MyList: React.FC = () => {
     {
       id: '2',
       title: 'Pushpa: The Rise',
-      imageUrl: 'https://via.placeholder.com/300x400/1a1a2e/ffffff?text=Pushpa',
+      imageUrl: '',
       duration: '2h 59m',
       rating: 4.2,
       year: 2021,
@@ -57,7 +57,7 @@ const MyList: React.FC = () => {
     {
       id: '3',
       title: 'KGF Chapter 2',
-      imageUrl: 'https://via.placeholder.com/300x400/0f3460/ffffff?text=KGF+2',
+      imageUrl: '',
       duration: '2h 48m',
       rating: 4.3,
       year: 2022,
@@ -70,7 +70,7 @@ const MyList: React.FC = () => {
     {
       id: '4',
       title: 'Pathaan',
-      imageUrl: 'https://via.placeholder.com/300x400/ff6b6b/ffffff?text=Pathaan',
+      imageUrl: '',
       duration: '2h 26m',
       rating: 4.1,
       year: 2023,
@@ -83,7 +83,7 @@ const MyList: React.FC = () => {
     {
       id: '5',
       title: 'Gangubai Kathiawadi',
-      imageUrl: 'https://via.placeholder.com/300x400/f7b731/ffffff?text=Gangubai',
+      imageUrl: '',
       duration: '2h 34m',
       rating: 4.3,
       year: 2022,
@@ -136,7 +136,7 @@ const MyList: React.FC = () => {
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Button size="icon" variant="ghost" onClick={() => navigate('/')}>
+              <Button size="icon" variant="ghost" onClick={() => navigate('/home')}>
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="flex items-center space-x-2">
@@ -261,7 +261,7 @@ const MyList: React.FC = () => {
             <p className="text-muted-foreground mb-4">
               Start adding movies and shows to your watchlist
             </p>
-            <Button onClick={() => navigate('/')}>
+            <Button onClick={() => navigate('/home')}>
               Browse Content
             </Button>
           </div>

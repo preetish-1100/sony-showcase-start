@@ -29,12 +29,16 @@ const MovieDescription: React.FC = () => {
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [userXP] = useState(1250); // Mock user XP
 
+  // Check if movie is in watchlist (mock data - in real app, this would come from API)
+  const mockWatchlistMovies = ['1', '2', '3']; // Movie IDs that are in watchlist
+  const isMovieInWatchlist = mockWatchlistMovies.includes(id || '1');
+
   // Mock movie data
   const movieData: MovieDetails = {
     id: id || '1',
     title: 'RRR',
     description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s. The film follows the lives of Alluri Sitarama Raju and Komaram Bheem, who fought against the British Raj and the Nizam of Hyderabad respectively.',
-    imageUrl: 'https://via.placeholder.com/800x600/16213e/ffffff?text=RRR',
+    imageUrl: '',
     duration: '3h 7m',
     rating: 4.5,
     year: 2022,
@@ -74,7 +78,7 @@ const MovieDescription: React.FC = () => {
       <header className="bg-background shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <Button size="icon" variant="ghost" onClick={() => navigate('/')}>
+            <Button size="icon" variant="ghost" onClick={() => navigate('/home')}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-lg font-semibold">Movie Details</h1>
@@ -140,9 +144,9 @@ const MovieDescription: React.FC = () => {
               size="icon"
               variant="ghost"
               onClick={handleAddToWatchlist}
-              className={isInWatchlist ? 'text-red-500' : 'text-muted-foreground'}
+              className={isMovieInWatchlist ? 'text-red-500' : 'text-muted-foreground'}
             >
-              <Heart className={`w-6 h-6 ${isInWatchlist ? 'fill-current' : ''}`} />
+              <Heart className={`w-6 h-6 ${isMovieInWatchlist ? 'fill-current' : ''}`} />
             </Button>
           </div>
 
@@ -232,7 +236,7 @@ const MovieDescription: React.FC = () => {
                 onClick={handleAddToWatchlist}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                {isInWatchlist ? 'Remove from List' : 'Add to List'}
+                {isMovieInWatchlist ? 'Remove from List' : 'Add to List'}
               </Button>
               <Button variant="outline" size="icon">
                 <Heart className="w-4 h-4" />

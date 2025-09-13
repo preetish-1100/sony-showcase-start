@@ -521,7 +521,7 @@ const Search: React.FC = () => {
       <header className="bg-background shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center space-x-3">
-            <Button size="icon" variant="ghost" onClick={() => navigate('/')}>
+            <Button size="icon" variant="ghost" onClick={() => navigate('/home')}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             
