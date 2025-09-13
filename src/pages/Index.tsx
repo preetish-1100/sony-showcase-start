@@ -1,14 +1,34 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import React, { useState } from 'react';
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import Home from './Home';
+
+interface UserPreferences {
+  phoneNumber?: string;
+  languages: string[];
+  genres: string[];
+  contentTypes: string[];
+  allowLocation: boolean;
+}
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>({
+    languages: [],
+    genres: [],
+    contentTypes: [],
+    allowLocation: false,
+  });
+
+  const handleOnboardingComplete = (preferences: UserPreferences) => {
+    setUserPreferences(preferences);
+    setShowOnboarding(false);
+  };
+
+  if (showOnboarding) {
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+  }
+
+  return <Home userPreferences={userPreferences} />;
 };
 
 export default Index;

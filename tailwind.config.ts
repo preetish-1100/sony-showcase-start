@@ -47,6 +47,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        sonyliv: {
+          blue: "hsl(var(--sonyliv-blue))",
+          gray: "hsl(var(--sonyliv-gray))",
+          success: "hsl(var(--sonyliv-success))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
