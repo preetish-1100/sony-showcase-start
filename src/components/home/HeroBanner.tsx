@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Info, Star, Clock } from 'lucide-react';
+import { useMovieData } from '@/hooks/useMovieData';
 
 interface BannerItem {
   id: string;

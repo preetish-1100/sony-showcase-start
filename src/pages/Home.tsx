@@ -7,6 +7,7 @@ import ContentSection from '@/components/home/ContentSection';
 import ContinueWatchingSection from '@/components/home/ContinueWatchingSection';
 import XPNotification from '@/components/gamification/XPNotification';
 import WelcomeBackScreen from '@/components/gamification/WelcomeBackScreen';
+import { useMovieData } from '@/hooks/useMovieData';
 
 interface HomeProps {
   userPreferences: {
@@ -22,6 +23,17 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNavigateToSearch }) => {
   const navigate = useNavigate();
+  
+  // Use the movie data hook
+  const {
+    popularMovies,
+    popularTVShows,
+    trendingContent,
+    genreContent,
+    isLoading: isMovieDataLoading,
+    isError: isMovieDataError
+  } = useMovieData(userPreferences);
+  
   // State for actual watched content - only show continue watching if user has watched something
   const [continueWatchingItems, setContinueWatchingItems] = useState<any[]>([]);
   const [currentlyWatching, setCurrentlyWatching] = useState<Set<string>>(new Set());
@@ -38,240 +50,29 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   const [returningUser] = useState(Math.random() > 0.7); // 30% chance for demo
 
-  // Enhanced movie database with proper posters and metadata
-  const movieDatabase = {
-    'Pushpa: The Rise': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff6b35/ffffff?text=Pushpa',
-      language: 'Telugu',
-      genre: 'action',
-      year: 2021,
-      rating: 4.2,
-      isPremium: false,
-      duration: '2h 59m'
-    },
-    'RRR': {
-      imageUrl: 'https://via.placeholder.com/300x400/16213e/ffffff?text=RRR',
-      language: 'Telugu',
-      genre: 'action',
-      year: 2022,
-      rating: 4.5,
-      isPremium: false,
-      duration: '3h 7m'
-    },
-    'KGF Chapter 2': {
-      imageUrl: 'https://via.placeholder.com/300x400/0f3460/ffffff?text=KGF+2',
-      language: 'Kannada',
-      genre: 'action',
-      year: 2022,
-      rating: 4.3,
-      isPremium: true,
-      duration: '2h 48m'
-    },
-    'Sooryavanshi': {
-      imageUrl: 'https://via.placeholder.com/300x400/e94560/ffffff?text=Sooryavanshi',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2021,
-      rating: 4.0,
-      isPremium: false,
-      duration: '2h 28m'
-    },
-    'Pathaan': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff6b6b/ffffff?text=Pathaan',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2023,
-      rating: 4.1,
-      isPremium: true,
-      duration: '2h 26m'
-    },
-    'Jawan': {
-      imageUrl: 'https://via.placeholder.com/300x400/4ecdc4/ffffff?text=Jawan',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2023,
-      rating: 4.2,
-      isPremium: true,
-      duration: '2h 49m'
-    },
-    'Gangubai Kathiawadi': {
-      imageUrl: 'https://via.placeholder.com/300x400/f7b731/ffffff?text=Gangubai',
-      language: 'Hindi',
-      genre: 'drama',
-      year: 2022,
-      rating: 4.3,
-      isPremium: false,
-      duration: '2h 34m'
-    },
-    'Brahmastra': {
-      imageUrl: 'https://via.placeholder.com/300x400/2c2c54/ffffff?text=Brahmastra',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2022,
-      rating: 3.8,
-      isPremium: true,
-      duration: '2h 47m'
-    },
-    'Vikram': {
-      imageUrl: 'https://via.placeholder.com/300x400/00d2d3/ffffff?text=Vikram',
-      language: 'Tamil',
-      genre: 'action',
-      year: 2022,
-      rating: 4.4,
-      isPremium: false,
-      duration: '2h 53m'
-    },
-    'Beast': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff9ff3/ffffff?text=Beast',
-      language: 'Tamil',
-      genre: 'action',
-      year: 2022,
-      rating: 3.9,
-      isPremium: false,
-      duration: '2h 38m'
-    },
-    'Jersey': {
-      imageUrl: 'https://via.placeholder.com/300x400/54a0ff/ffffff?text=Jersey',
-      language: 'Telugu',
-      genre: 'drama',
-      year: 2019,
-      rating: 4.1,
-      isPremium: false,
-      duration: '2h 17m'
-    },
-    'Heropanti 2': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff6348/ffffff?text=Heropanti+2',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2022,
-      rating: 3.7,
-      isPremium: true,
-      duration: '2h 23m'
-    },
-    'Runway 34': {
-      imageUrl: 'https://via.placeholder.com/300x400/2f3542/ffffff?text=Runway+34',
-      language: 'Hindi',
-      genre: 'thriller',
-      year: 2022,
-      rating: 3.8,
-      isPremium: false,
-      duration: '2h 11m'
-    },
-    'Bhool Bhulaiyaa 2': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff7675/ffffff?text=Bhool+2',
-      language: 'Hindi',
-      genre: 'horror',
-      year: 2022,
-      rating: 3.9,
-      isPremium: false,
-      duration: '2h 24m'
-    },
-    'Jurassic World Dominion': {
-      imageUrl: 'https://via.placeholder.com/300x400/70a1ff/ffffff?text=Jurassic+World',
-      language: 'English',
-      genre: 'action',
-      year: 2022,
-      rating: 4.0,
-      isPremium: true,
-      duration: '2h 27m'
-    },
-    'Baahubali: The Beginning': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff6b35/ffffff?text=Baahubali',
-      language: 'Telugu',
-      genre: 'action',
-      year: 2015,
-      rating: 4.6,
-      isPremium: false,
-      duration: '2h 39m'
-    },
-    'KGF Chapter 1': {
-      imageUrl: 'https://via.placeholder.com/300x400/2c2c54/ffffff?text=KGF+1',
-      language: 'Kannada',
-      genre: 'action',
-      year: 2018,
-      rating: 4.4,
-      isPremium: false,
-      duration: '2h 35m'
-    },
-    'Ala Vaikunthapurramuloo': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff9f43/ffffff?text=Ala+Vaikunthapurramuloo',
-      language: 'Telugu',
-      genre: 'family',
-      year: 2020,
-      rating: 4.3,
-      isPremium: false,
-      duration: '2h 49m'
-    },
-    'Geetha Govindam': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff3838/ffffff?text=Geetha+Govindam',
-      language: 'Telugu',
-      genre: 'romance',
-      year: 2018,
-      rating: 4.2,
-      isPremium: false,
-      duration: '2h 24m'
-    }
-  };
-
-  // Helper function to get movie poster component
-  const getMoviePoster = (title: string, className: string = "w-full h-full object-cover rounded-lg") => {
-    const movie = movieDatabase[title as keyof typeof movieDatabase];
-    if (!movie) {
-      return (
-        <div className={`${className} bg-gray-600 flex items-center justify-center text-white font-bold text-lg`}>
-          No Image
-        </div>
-      );
-    }
-
-    // Create a colored poster with movie name
-    const colors = {
-      'Pushpa: The Rise': 'bg-orange-600',
-      'RRR': 'bg-blue-800',
-      'KGF Chapter 2': 'bg-purple-800',
-      'Sooryavanshi': 'bg-red-600',
-      'Pathaan': 'bg-red-500',
-      'Jawan': 'bg-teal-500',
-      'Gangubai Kathiawadi': 'bg-yellow-500',
-      'Brahmastra': 'bg-indigo-800',
-      'Vikram': 'bg-cyan-500',
-      'Beast': 'bg-pink-400',
-      'Jersey': 'bg-blue-500',
-      'Heropanti 2': 'bg-orange-500',
-      'Runway 34': 'bg-gray-700',
-      'Bhool Bhulaiyaa 2': 'bg-red-400',
-      'Jurassic World Dominion': 'bg-blue-600',
-      'Baahubali: The Beginning': 'bg-orange-500',
-      'KGF Chapter 1': 'bg-purple-700',
-      'Ala Vaikunthapurramuloo': 'bg-yellow-400',
-      'Geetha Govindam': 'bg-red-500'
-    };
-
-    const bgColor = colors[title as keyof typeof colors] || 'bg-gray-600';
-    const shortTitle = title.length > 15 ? title.split(' ')[0] : title;
-
+  // Loading state for movie data
+  if (isMovieDataLoading) {
     return (
-      <div className={`${className} ${bgColor} flex items-center justify-center text-white font-bold text-center p-2`}>
-        <div>
-          <div className="text-lg md:text-xl">{shortTitle}</div>
-          {title.includes('Chapter') && <div className="text-sm opacity-80">Chapter</div>}
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your personalized content...</p>
         </div>
       </div>
     );
-  };
+  }
 
-  // Language-specific content mapping
-  const getLanguageContent = (language: string) => {
-    const languageContentMap: { [key: string]: string[] } = {
-      'te': ['Pushpa: The Rise', 'RRR', 'Jersey', 'Baahubali: The Beginning', 'Ala Vaikunthapurramuloo', 'Geetha Govindam'],
-      'hi': ['Sooryavanshi', 'Gangubai Kathiawadi', 'Pathaan', 'Jawan', 'Heropanti 2', 'Brahmastra'],
-      'ta': ['Vikram', 'Beast'],
-      'kn': ['KGF Chapter 2', 'KGF Chapter 1'],
-      'ml': ['Brahmastra', 'Jersey'],
-      'en': ['Jurassic World Dominion', 'Runway 34']
-    };
-    return languageContentMap[language] || [];
-  };
+  // Error state for movie data
+  if (isMovieDataError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Failed to load content</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   // Get language display name
   const getLanguageDisplayName = (languageCode: string) => {
@@ -370,10 +171,11 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     return filteredContent.slice(0, count);
   };
 
-  const trendingContent = generatePersonalizedContent(6, { showViews: true });
-  const sportsContent = generatePersonalizedContent(4, { isLive: Math.random() > 0.5 });
-  const premiumContent = generatePersonalizedContent(6, { isPremium: true });
-  const topPicksContent = generatePersonalizedContent(6, { showMatch: true });
+  // Use real movie data for content sections
+  const trendingContentData = trendingContent.slice(0, 6);
+  const sportsContent = popularMovies.filter(movie => movie.genre?.includes(16)).slice(0, 4); // Sports genre
+  const premiumContent = popularMovies.filter(movie => movie.isPremium).slice(0, 6);
+  const topPicksContent = popularMovies.slice(0, 6);
 
   const handleItemPlay = (item: any) => {
     console.log('Play item:', item);
@@ -513,7 +315,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         {/* Trending Now in India - Universal */}
         <ContentSection
           title="Trending Now in India 🔥"
-          items={trendingContent}
+          items={trendingContentData}
           icon={<TrendingUp className="w-5 h-5 text-sonyliv-live" />}
           onItemPlay={handleItemPlay}
           onItemWatchlist={handleItemWatchlist}
@@ -522,7 +324,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
 
         {/* Language-specific sections - Only show languages user selected */}
         {userPreferences.languages.slice(0, 2).map((language) => {
-          const languageContent = generateMockContent(6, { language });
+          const languageContent = popularMovies.filter(movie => movie.language === language).slice(0, 6);
           return languageContent.length > 0 ? (
             <ContentSection
               key={language}

@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMovieData } from '@/hooks/useMovieData';
 
 interface UserPreferences {
   phoneNumber?: string;
@@ -156,6 +157,12 @@ const popularActors: Actor[] = [
 const Search: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get user preferences from localStorage or default values
+  const userPreferences = JSON.parse(localStorage.getItem('userPreferences') || '{"languages":["en"],"genres":[],"contentTypes":[],"allowLocation":false}');
+  
+  // Use movie data hook
+  const { searchContent } = useMovieData(userPreferences);
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [isVoiceSearching, setIsVoiceSearching] = useState(false);
@@ -324,7 +331,7 @@ const Search: React.FC = () => {
     };
   }, []);
 
-  const handleSearch = useCallback((query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     if (query.trim()) {
       setIsSearching(true);
       setRecentSearches(prev => {
@@ -336,17 +343,33 @@ const Search: React.FC = () => {
       // Update URL with search query
       setSearchParams({ q: query });
       
-      // Simulate API call with mock data
-      setTimeout(() => {
-        const filteredResults = mockSearchResults.filter(result => 
-          result.title.toLowerCase().includes(query.toLowerCase()) ||
-          result.description?.toLowerCase().includes(query.toLowerCase())
-        );
-        setSearchResults(filteredResults);
+      try {
+        // Use real movie data search
+        const results = await searchContent(query);
+        
+        // Convert to SearchResult format
+        const searchResults = results.map(item => ({
+          id: item.id,
+          title: item.title,
+          type: 'movie' as const,
+          image: item.imageUrl,
+          rating: item.rating || 0,
+          year: item.year,
+          duration: item.duration,
+          language: item.language,
+          isPremium: item.isPremium,
+          description: item.overview
+        }));
+        
+        setSearchResults(searchResults);
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
         setIsSearching(false);
-      }, 500);
+      }
     }
-  }, [setSearchParams]);
+  }, [setSearchParams, searchContent]);
 
   const handleVoiceSearch = useCallback(() => {
     if (isVoiceSearching) {
