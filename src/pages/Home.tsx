@@ -1,6 +1,9 @@
-import React from 'react';
-import { Play, TrendingUp, Clock, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, User, TrendingUp, Star, MapPin, Trophy, Crown, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import HeroBanner from '@/components/home/HeroBanner';
+import ContentSection from '@/components/home/ContentSection';
+import ContinueWatchingSection from '@/components/home/ContinueWatchingSection';
 
 interface HomeProps {
   userPreferences: {
@@ -13,135 +16,172 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ userPreferences }) => {
-  const hasPreferences = userPreferences.languages.length > 0 || 
-                        userPreferences.genres.length > 0 || 
-                        userPreferences.contentTypes.length > 0;
+  // Mock data - in real app this would come from API
+  const [continueWatchingItems] = useState([
+    {
+      id: '1',
+      title: 'Scam 1992',
+      episode: 'Episode 5: The Rise',
+      progress: 65,
+      timeRemaining: '25 min',
+      lastWatched: '2 hours ago'
+    },
+    {
+      id: '2', 
+      title: 'The Family Man',
+      episode: 'Season 2, Episode 3',
+      progress: 30,
+      timeRemaining: '40 min',
+      lastWatched: 'Yesterday'
+    }
+  ]);
+
+  const generateMockContent = (count: number, options: any = {}) => {
+    const titles = [
+      'Pushpa: The Rise', 'RRR', 'KGF Chapter 2', 'Sooryavanshi', 'Spider-Man: No Way Home',
+      'The Batman', 'Gangubai Kathiawadi', 'Brahmastra', 'Vikram', 'Beast',
+      'Jersey', 'Heropanti 2', 'Runway 34', 'Bhool Bhulaiyaa 2', 'Jurassic World Dominion'
+    ];
+
+    return Array.from({ length: count }, (_, i) => ({
+      id: `mock-${i}`,
+      title: titles[i % titles.length],
+      duration: '2h 30m',
+      rating: 4.2 + (Math.random() * 0.8),
+      language: options.language || undefined,
+      isPremium: options.isPremium || Math.random() > 0.7,
+      isLive: options.isLive || false,
+      matchPercentage: options.showMatch ? Math.floor(85 + Math.random() * 15) : undefined,
+      viewCount: options.showViews ? `${Math.floor(1 + Math.random() * 5)}k` : undefined
+    }));
+  };
+
+  const trendingContent = generateMockContent(8, { showViews: true });
+  const sportsContent = generateMockContent(6, { isLive: Math.random() > 0.5 });
+  const premiumContent = generateMockContent(8, { isPremium: true });
+  const topPicksContent = generateMockContent(8, { showMatch: true });
+
+  const handleItemPlay = (item: any) => {
+    console.log('Play item:', item);
+  };
+
+  const handleItemWatchlist = (item: any) => {
+    console.log('Add to watchlist:', item);
+  };
+
+  const handleContinueWatching = (item: any) => {
+    console.log('Continue watching:', item);
+  };
+
+  const handleRemoveContinueWatching = (item: any) => {
+    console.log('Remove from continue watching:', item);
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-md mx-auto px-6 py-4">
+      {/* Top Navigation Bar */}
+      <header className="bg-background shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">SonyLIV</h1>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+            <div className="flex items-center">
+              <img 
+                src="/placeholder.svg" 
+                alt="SonyLIV" 
+                className="h-8 w-auto"
+                style={{ filter: 'hue-rotate(220deg) saturate(1.5)' }}
+              />
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button size="icon" variant="ghost" className="text-muted-foreground">
+                <Search className="w-5 h-5" />
+              </Button>
+              <Button size="icon" variant="ghost" className="text-muted-foreground">
+                <div className="w-8 h-8 bg-sonyliv-primary/20 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-sonyliv-primary" />
+                </div>
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Welcome Message */}
-      <div className="max-w-md mx-auto px-6 py-6">
-        <div className="bg-gradient-to-r from-primary/10 to-sonyliv-success/10 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Welcome to SonyLIV! 🎉
-          </h2>
-          <p className="text-gray-700">
-            {hasPreferences ? 
-              "Your personalized content is ready based on your preferences." :
-              "Discover amazing content from around the world."
-            }
-          </p>
+      <div className="max-w-md mx-auto">
+        {/* Hero Banner Carousel */}
+        <div className="px-4 pt-4">
+          <HeroBanner />
         </div>
 
-        {/* Preferences Summary */}
-        {hasPreferences && (
-          <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
-            <h3 className="font-semibold text-gray-800 mb-4">Your Preferences</h3>
-            <div className="space-y-3">
-              {userPreferences.languages.length > 0 && (
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm text-gray-700">
-                    Languages: {userPreferences.languages.join(', ')}
-                  </span>
-                </div>
-              )}
-              {userPreferences.genres.length > 0 && (
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm text-gray-700">
-                    Genres: {userPreferences.genres.join(', ')}
-                  </span>
-                </div>
-              )}
-              {userPreferences.contentTypes.length > 0 && (
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-sm text-gray-700">
-                    Content: {userPreferences.contentTypes.join(', ')}
-                  </span>
-                </div>
-              )}
-              {userPreferences.allowLocation && (
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-sonyliv-success rounded-full"></div>
-                  <span className="text-sm text-gray-700">
-                    Location-based recommendations enabled
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Continue Watching Section */}
+        <ContinueWatchingSection
+          items={continueWatchingItems}
+          onResume={handleContinueWatching}
+          onRemove={handleRemoveContinueWatching}
+        />
+
+        {/* Top Picks for You - Personalized */}
+        <ContentSection
+          title="Top Picks for You"
+          subtitle="Based on your preferences"
+          items={topPicksContent}
+          icon={<Zap className="w-5 h-5 text-sonyliv-primary" />}
+          cardSize="large"
+          onItemPlay={handleItemPlay}
+          onItemWatchlist={handleItemWatchlist}
+        />
+
+        {/* Most Watched Near You - Location-based */}
+        {userPreferences.allowLocation && (
+          <ContentSection
+            title="Most Watched Near You"
+            subtitle="Trending in your area"
+            items={generateMockContent(8, { showViews: true })}
+            icon={<MapPin className="w-5 h-5 text-sonyliv-success" />}
+            onItemPlay={handleItemPlay}
+            onItemWatchlist={handleItemWatchlist}
+          />
         )}
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Button className="h-16 flex flex-col items-center justify-center space-y-1">
-            <Play className="w-6 h-6" />
-            <span className="text-sm">Watch Now</span>
-          </Button>
-          <Button variant="outline" className="h-16 flex flex-col items-center justify-center space-y-1">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            <span className="text-sm">Trending</span>
-          </Button>
-        </div>
+        {/* Trending Now in India - Universal */}
+        <ContentSection
+          title="Trending Now in India 🔥"
+          items={trendingContent}
+          icon={<TrendingUp className="w-5 h-5 text-sonyliv-live" />}
+          onItemPlay={handleItemPlay}
+          onItemWatchlist={handleItemWatchlist}
+        />
 
-        {/* Content Sections */}
-        <div className="space-y-6">
-          {/* Continue Watching */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Continue Watching</h3>
-              <Clock className="w-5 h-5 text-gray-400" />
-            </div>
-            <div className="bg-gray-100 rounded-xl p-8 text-center">
-              <p className="text-gray-500">Start watching to see your progress here</p>
-            </div>
-          </section>
+        {/* Language-specific sections */}
+        {userPreferences.languages.map((language) => (
+          <ContentSection
+            key={language}
+            title={`In ${language}`}
+            items={generateMockContent(8, { language })}
+            onItemPlay={handleItemPlay}
+            onItemWatchlist={handleItemWatchlist}
+          />
+        ))}
 
-          {/* Recommended */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {hasPreferences ? 'Recommended for You' : 'Popular Content'}
-              </h3>
-              <Star className="w-5 h-5 text-yellow-500" />
-            </div>
-            <div className="bg-gray-100 rounded-xl p-8 text-center">
-              <p className="text-gray-500">
-                {hasPreferences ? 
-                  'Personalized recommendations based on your preferences' :
-                  'Popular movies and shows'
-                }
-              </p>
-            </div>
-          </section>
+        {/* Sports Highlights - Universal Business Priority */}
+        <ContentSection
+          title="Sports Highlights ⚽"
+          items={sportsContent}
+          icon={<Trophy className="w-5 h-5 text-sonyliv-secondary" />}
+          onItemPlay={handleItemPlay}
+          onItemWatchlist={handleItemWatchlist}
+        />
 
-          {/* Location-based (if enabled) */}
-          {userPreferences.allowLocation && (
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Most Watched Near You</h3>
-                <TrendingUp className="w-5 h-5 text-sonyliv-success" />
-              </div>
-              <div className="bg-gray-100 rounded-xl p-8 text-center">
-                <p className="text-gray-500">Trending content in your area</p>
-              </div>
-            </section>
-          )}
-        </div>
+        {/* Premium Content - Universal Monetization */}
+        <ContentSection
+          title="Premium Movies & Shows ⭐"
+          subtitle="Upgrade to Premium for exclusive content"
+          items={premiumContent}
+          icon={<Crown className="w-5 h-5 text-sonyliv-premium" />}
+          onItemPlay={handleItemPlay}
+          onItemWatchlist={handleItemWatchlist}
+        />
+
+        {/* Bottom Spacing */}
+        <div className="h-8" />
       </div>
     </div>
   );
