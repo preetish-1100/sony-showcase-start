@@ -34,7 +34,7 @@ const MovieDescription: React.FC = () => {
     id: id || '1',
     title: 'RRR',
     description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s. The film follows the lives of Alluri Sitarama Raju and Komaram Bheem, who fought against the British Raj and the Nizam of Hyderabad respectively.',
-    imageUrl: 'https://m.media-amazon.com/images/M/MV5BODUwNDNjYzctODUxNy00ZTA2LWIyYTEtMDc5Y2U5ZTI3Nzk4XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_.jpg',
+    imageUrl: 'https://via.placeholder.com/800x600/16213e/ffffff?text=RRR',
     duration: '3h 7m',
     rating: 4.5,
     year: 2022,

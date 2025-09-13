@@ -31,7 +31,7 @@ const MyList: React.FC = () => {
     {
       id: '1',
       title: 'RRR',
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODUwNDNjYzctODUxNy00ZTA2LWIyYTEtMDc5Y2U5ZTI3Nzk4XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/16213e/ffffff?text=RRR',
       duration: '3h 7m',
       rating: 4.5,
       year: 2022,
@@ -44,7 +44,7 @@ const MyList: React.FC = () => {
     {
       id: '2',
       title: 'Pushpa: The Rise',
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMTQyNTU0NjE0Nl5BMl5BanBnXkFtZTgwMDU1NzM2NzE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/1a1a2e/ffffff?text=Pushpa',
       duration: '2h 59m',
       rating: 4.2,
       year: 2021,
@@ -57,7 +57,7 @@ const MyList: React.FC = () => {
     {
       id: '3',
       title: 'KGF Chapter 2',
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjMwMDgyOGQtMWZjNC00MDUwLTllZDYtZWMzNDBmN2VjMTJkXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/0f3460/ffffff?text=KGF+2',
       duration: '2h 48m',
       rating: 4.3,
       year: 2022,
@@ -70,7 +70,7 @@ const MyList: React.FC = () => {
     {
       id: '4',
       title: 'Pathaan',
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BYWQ2NzQ1OTktNzJjYS00OGVhLWFkOWUtM2Q1NTVkYzVjYzI0XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/ff6b6b/ffffff?text=Pathaan',
       duration: '2h 26m',
       rating: 4.1,
       year: 2023,
@@ -83,7 +83,7 @@ const MyList: React.FC = () => {
     {
       id: '5',
       title: 'Gangubai Kathiawadi',
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjU3NTE4NjQ1NF5BMl5BanBnXkFtZTgwNjE4NTY2NzM@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/f7b731/ffffff?text=Gangubai',
       duration: '2h 34m',
       rating: 4.3,
       year: 2022,

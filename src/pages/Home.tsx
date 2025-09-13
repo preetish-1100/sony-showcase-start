@@ -41,7 +41,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // Enhanced movie database with proper posters and metadata
   const movieDatabase = {
     'Pushpa: The Rise': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMTQyNTU0NjE0Nl5BMl5BanBnXkFtZTgwMDU1NzM2NzE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/1a1a2e/ffffff?text=Pushpa',
       language: 'Telugu',
       genre: 'action',
       year: 2021,
@@ -50,7 +50,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 59m'
     },
     'RRR': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODUwNDNjYzctODUxNy00ZTA2LWIyYTEtMDc5Y2U5ZTI3Nzk4XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/16213e/ffffff?text=RRR',
       language: 'Telugu',
       genre: 'action',
       year: 2022,
@@ -59,7 +59,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '3h 7m'
     },
     'KGF Chapter 2': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjMwMDgyOGQtMWZjNC00MDUwLTllZDYtZWMzNDBmN2VjMTJkXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/0f3460/ffffff?text=KGF+2',
       language: 'Kannada',
       genre: 'action',
       year: 2022,
@@ -68,7 +68,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 48m'
     },
     'Sooryavanshi': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/e94560/ffffff?text=Sooryavanshi',
       language: 'Hindi',
       genre: 'action',
       year: 2021,
@@ -77,7 +77,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 28m'
     },
     'Pathaan': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BYWQ2NzQ1OTktNzJjYS00OGVhLWFkOWUtM2Q1NTVkYzVjYzI0XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/ff6b6b/ffffff?text=Pathaan',
       language: 'Hindi',
       genre: 'action',
       year: 2023,
@@ -113,7 +113,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 47m'
     },
     'Vikram': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMmJhYTYxMGEtNjQ5NS00YWZiLWEyZDEtZWI2YzVhN2Q4OWFkXkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/00d2d3/ffffff?text=Vikram',
       language: 'Tamil',
       genre: 'action',
       year: 2022,
@@ -122,7 +122,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 53m'
     },
     'Beast': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjI2NzY2Nzk3M15BMl5BanBnXkFtZTgwNzI3MzQ2NDM@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/ff9ff3/ffffff?text=Beast',
       language: 'Tamil',
       genre: 'action',
       year: 2022,
@@ -131,7 +131,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 38m'
     },
     'Jersey': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/54a0ff/ffffff?text=Jersey',
       language: 'Telugu',
       genre: 'drama',
       year: 2019,
@@ -140,7 +140,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 17m'
     },
     'Heropanti 2': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/ff6348/ffffff?text=Heropanti+2',
       language: 'Hindi',
       genre: 'action',
       year: 2022,
@@ -149,7 +149,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 23m'
     },
     'Runway 34': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjU3NTE4NjQ1NF5BMl5BanBnXkFtZTgwNjE4NTY2NzM@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/2f3542/ffffff?text=Runway+34',
       language: 'Hindi',
       genre: 'thriller',
       year: 2022,
@@ -158,7 +158,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 11m'
     },
     'Bhool Bhulaiyaa 2': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/ff7675/ffffff?text=Bhool+2',
       language: 'Hindi',
       genre: 'horror',
       year: 2022,
@@ -167,13 +167,49 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 24m'
     },
     'Jurassic World Dominion': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODI1MTA0N2UtYjU2My00MjM4LWFjOGQtNzY5N2Y2N2VjMzE1XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
+      imageUrl: 'https://via.placeholder.com/300x400/70a1ff/ffffff?text=Jurassic+World',
       language: 'English',
       genre: 'action',
       year: 2022,
       rating: 4.0,
       isPremium: true,
       duration: '2h 27m'
+    },
+    'Baahubali: The Beginning': {
+      imageUrl: 'https://via.placeholder.com/300x400/ff6b35/ffffff?text=Baahubali',
+      language: 'Telugu',
+      genre: 'action',
+      year: 2015,
+      rating: 4.6,
+      isPremium: false,
+      duration: '2h 39m'
+    },
+    'KGF Chapter 1': {
+      imageUrl: 'https://via.placeholder.com/300x400/2c2c54/ffffff?text=KGF+1',
+      language: 'Kannada',
+      genre: 'action',
+      year: 2018,
+      rating: 4.4,
+      isPremium: false,
+      duration: '2h 35m'
+    },
+    'Ala Vaikunthapurramuloo': {
+      imageUrl: 'https://via.placeholder.com/300x400/ff9f43/ffffff?text=Ala+Vaikunthapurramuloo',
+      language: 'Telugu',
+      genre: 'family',
+      year: 2020,
+      rating: 4.3,
+      isPremium: false,
+      duration: '2h 49m'
+    },
+    'Geetha Govindam': {
+      imageUrl: 'https://via.placeholder.com/300x400/ff3838/ffffff?text=Geetha+Govindam',
+      language: 'Telugu',
+      genre: 'romance',
+      year: 2018,
+      rating: 4.2,
+      isPremium: false,
+      duration: '2h 24m'
     }
   };
 
@@ -184,10 +220,10 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // Language-specific content mapping
   const getLanguageContent = (language: string) => {
     const languageContentMap: { [key: string]: string[] } = {
-      'te': ['Pushpa: The Rise', 'RRR', 'Jersey'],
+      'te': ['Pushpa: The Rise', 'RRR', 'Jersey', 'Baahubali: The Beginning', 'Ala Vaikunthapurramuloo', 'Geetha Govindam'],
       'hi': ['Sooryavanshi', 'Gangubai Kathiawadi', 'Pathaan', 'Jawan', 'Heropanti 2', 'Brahmastra'],
       'ta': ['Vikram', 'Beast'],
-      'kn': ['KGF Chapter 2'],
+      'kn': ['KGF Chapter 2', 'KGF Chapter 1'],
       'ml': ['Brahmastra', 'Jersey'],
       'en': ['Jurassic World Dominion', 'Runway 34']
     };
