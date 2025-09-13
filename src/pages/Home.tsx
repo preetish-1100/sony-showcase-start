@@ -41,7 +41,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // Enhanced movie database with proper posters and metadata
   const movieDatabase = {
     'Pushpa: The Rise': {
-      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMTQyNTU0NjE0Nl5BMl5BanBnXkFtZTgwMDU1NzM2NzE@._V1_.jpg',
       language: 'Telugu',
       genre: 'action',
       year: 2021,
@@ -50,7 +50,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 59m'
     },
     'RRR': {
-      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODUwNDNjYzctODUxNy00ZTA2LWIyYTEtMDc5Y2U5ZTI3Nzk4XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_.jpg',
       language: 'Telugu',
       genre: 'action',
       year: 2022,
@@ -59,7 +59,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '3h 7m'
     },
     'KGF Chapter 2': {
-      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjMwMDgyOGQtMWZjNC00MDUwLTllZDYtZWMzNDBmN2VjMTJkXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg',
       language: 'Kannada',
       genre: 'action',
       year: 2022,
@@ -68,7 +68,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 48m'
     },
     'Sooryavanshi': {
-      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
       language: 'Hindi',
       genre: 'action',
       year: 2021,
@@ -77,7 +77,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 28m'
     },
     'Pathaan': {
-      imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BYWQ2NzQ1OTktNzJjYS00OGVhLWFkOWUtM2Q1NTVkYzVjYzI0XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
       language: 'Hindi',
       genre: 'action',
       year: 2023,
@@ -86,7 +86,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 26m'
     },
     'Jawan': {
-      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMzI2NzY2Nzk3M15BMl5BanBnXkFtZTgwNzI3MzQ2NDM@._V1_.jpg',
       language: 'Hindi',
       genre: 'action',
       year: 2023,
@@ -95,7 +95,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 49m'
     },
     'Gangubai Kathiawadi': {
-      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjU3NTE4NjQ1NF5BMl5BanBnXkFtZTgwNjE4NTY2NzM@._V1_.jpg',
       language: 'Hindi',
       genre: 'drama',
       year: 2022,
@@ -104,7 +104,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 34m'
     },
     'Brahmastra': {
-      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODI1MTA0N2UtYjU2My00MjM4LWFjOGQtNzY5N2Y2N2VjMzE1XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
       language: 'Hindi',
       genre: 'action',
       year: 2022,
@@ -113,7 +113,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 47m'
     },
     'Vikram': {
-      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMmJhYTYxMGEtNjQ5NS00YWZiLWEyZDEtZWI2YzVhN2Q4OWFkXkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
       language: 'Tamil',
       genre: 'action',
       year: 2022,
@@ -122,7 +122,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 53m'
     },
     'Beast': {
-      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjI2NzY2Nzk3M15BMl5BanBnXkFtZTgwNzI3MzQ2NDM@._V1_.jpg',
       language: 'Tamil',
       genre: 'action',
       year: 2022,
@@ -131,7 +131,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 38m'
     },
     'Jersey': {
-      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
       language: 'Telugu',
       genre: 'drama',
       year: 2019,
@@ -140,7 +140,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 17m'
     },
     'Heropanti 2': {
-      imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
       language: 'Hindi',
       genre: 'action',
       year: 2022,
@@ -149,7 +149,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 23m'
     },
     'Runway 34': {
-      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjU3NTE4NjQ1NF5BMl5BanBnXkFtZTgwNjE4NTY2NzM@._V1_.jpg',
       language: 'Hindi',
       genre: 'thriller',
       year: 2022,
@@ -158,7 +158,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 11m'
     },
     'Bhool Bhulaiyaa 2': {
-      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjM2OTkyNTY3N15BMl5BanBnXkFtZTgwNzY1NzU0MjE@._V1_.jpg',
       language: 'Hindi',
       genre: 'horror',
       year: 2022,
@@ -167,7 +167,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       duration: '2h 24m'
     },
     'Jurassic World Dominion': {
-      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODI1MTA0N2UtYjU2My00MjM4LWFjOGQtNzY5N2Y2N2VjMzE1XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
       language: 'English',
       genre: 'action',
       year: 2022,
@@ -184,14 +184,27 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // Language-specific content mapping
   const getLanguageContent = (language: string) => {
     const languageContentMap: { [key: string]: string[] } = {
-      'Telugu': ['Pushpa: The Rise', 'RRR', 'Brahmastra', 'Vikram', 'Beast'],
-      'Hindi': ['Sooryavanshi', 'Gangubai Kathiawadi', 'Jersey', 'Heropanti 2', 'Bhool Bhulaiyaa 2'],
-      'Tamil': ['Vikram', 'Beast', 'KGF Chapter 2', 'RRR', 'Pushpa: The Rise'],
-      'Malayalam': ['Brahmastra', 'Jersey', 'The Batman', 'Vikram', 'Beast'],
-      'Kannada': ['KGF Chapter 2', 'Pushpa: The Rise', 'RRR', 'Brahmastra', 'Vikram'],
-      'English': ['Spider-Man: No Way Home', 'The Batman', 'Jurassic World Dominion', 'Runway 34', 'Sooryavanshi']
+      'te': ['Pushpa: The Rise', 'RRR', 'Jersey'],
+      'hi': ['Sooryavanshi', 'Gangubai Kathiawadi', 'Pathaan', 'Jawan', 'Heropanti 2', 'Brahmastra'],
+      'ta': ['Vikram', 'Beast'],
+      'kn': ['KGF Chapter 2'],
+      'ml': ['Brahmastra', 'Jersey'],
+      'en': ['Jurassic World Dominion', 'Runway 34']
     };
     return languageContentMap[language] || [];
+  };
+
+  // Get language display name
+  const getLanguageDisplayName = (languageCode: string) => {
+    const languageNames: { [key: string]: string } = {
+      'te': 'Telugu',
+      'hi': 'Hindi', 
+      'ta': 'Tamil',
+      'kn': 'Kannada',
+      'ml': 'Malayalam',
+      'en': 'English'
+    };
+    return languageNames[languageCode] || languageCode;
   };
 
   const generateMockContent = (count: number, options: any = {}) => {
@@ -332,12 +345,14 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img 
-                src="/placeholder.svg" 
-                alt="SonyLIV" 
-                className="h-8 w-auto"
-                style={{ filter: 'hue-rotate(220deg) saturate(1.5)' }}
-              />
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">S</span>
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  SonyLIV
+                </span>
+              </div>
             </div>
             <div className="flex items-center space-x-3">
               <Button 
@@ -435,11 +450,11 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           return languageContent.length > 0 ? (
             <ContentSection
               key={language}
-              title={`In ${language}`}
+              title={`Trending in ${getLanguageDisplayName(language)}`}
               items={languageContent}
               onItemPlay={handleItemPlay}
               onItemWatchlist={handleItemWatchlist}
-              onSeeAll={() => handleSeeAll(`In ${language}`)}
+              onSeeAll={() => handleSeeAll(`Trending in ${getLanguageDisplayName(language)}`)}
             />
           ) : null;
         })}

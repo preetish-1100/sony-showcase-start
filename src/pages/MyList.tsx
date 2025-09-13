@@ -31,7 +31,7 @@ const MyList: React.FC = () => {
     {
       id: '1',
       title: 'RRR',
-      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODUwNDNjYzctODUxNy00ZTA2LWIyYTEtMDc5Y2U5ZTI3Nzk4XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_.jpg',
       duration: '3h 7m',
       rating: 4.5,
       year: 2022,
@@ -44,7 +44,7 @@ const MyList: React.FC = () => {
     {
       id: '2',
       title: 'Pushpa: The Rise',
-      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMTQyNTU0NjE0Nl5BMl5BanBnXkFtZTgwMDU1NzM2NzE@._V1_.jpg',
       duration: '2h 59m',
       rating: 4.2,
       year: 2021,
@@ -57,7 +57,7 @@ const MyList: React.FC = () => {
     {
       id: '3',
       title: 'KGF Chapter 2',
-      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjMwMDgyOGQtMWZjNC00MDUwLTllZDYtZWMzNDBmN2VjMTJkXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg',
       duration: '2h 48m',
       rating: 4.3,
       year: 2022,
@@ -70,7 +70,7 @@ const MyList: React.FC = () => {
     {
       id: '4',
       title: 'Pathaan',
-      imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BYWQ2NzQ1OTktNzJjYS00OGVhLWFkOWUtM2Q1NTVkYzVjYzI0XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
       duration: '2h 26m',
       rating: 4.1,
       year: 2023,
@@ -83,7 +83,7 @@ const MyList: React.FC = () => {
     {
       id: '5',
       title: 'Gangubai Kathiawadi',
-      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
+      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjU3NTE4NjQ1NF5BMl5BanBnXkFtZTgwNjE4NTY2NzM@._V1_.jpg',
       duration: '2h 34m',
       rating: 4.3,
       year: 2022,
@@ -245,13 +245,6 @@ const MyList: React.FC = () => {
                           >
                             <Play className="w-4 h-4 mr-2" />
                             Play
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleRemoveFromList(item.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
