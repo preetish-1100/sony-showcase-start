@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Mic, MicOff, X, Filter, ArrowLeft, Clock, TrendingUp } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, Mic, MicOff, X, Filter, ArrowLeft, Clock, TrendingUp, Play, Star, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface UserPreferences {
   phoneNumber?: string;
@@ -16,9 +18,17 @@ interface UserPreferences {
   allowLocation: boolean;
 }
 
-interface SearchProps {
-  userPreferences: UserPreferences;
-  onBack: () => void;
+interface SearchResult {
+  id: string;
+  title: string;
+  type: 'movie' | 'show' | 'actor';
+  image: string;
+  rating: number;
+  year?: number;
+  duration?: string;
+  language?: string;
+  isPremium?: boolean;
+  description?: string;
 }
 
 interface SearchSuggestion {
@@ -87,17 +97,22 @@ const popularActors: Actor[] = [
   { id: 'ram', name: 'Ram Charan', nameNative: 'రామ్ చరణ్', image: '/placeholder.svg', movieCount: 18, popularMovies: ['RRR', 'Rangasthalam', 'Magadheera'] },
 ];
 
-const Search: React.FC<SearchProps> = ({ userPreferences, onBack }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const Search: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [isVoiceSearching, setIsVoiceSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(['Prabhas movies', 'Telugu action', 'Latest releases']);
   const [trendingSearches] = useState<string[]>(['RRR', 'Pushpa 2', 'Salaar', 'Animal']);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
-    languages: userPreferences.languages,
-    contentTypes: userPreferences.contentTypes,
-    genres: userPreferences.genres,
+    languages: [],
+    contentTypes: [],
+    genres: [],
     audioOptions: [],
     quality: []
   });
@@ -106,6 +121,67 @@ const Search: React.FC<SearchProps> = ({ userPreferences, onBack }) => {
   
   const searchInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+
+  // Mock search results data
+  const mockSearchResults: SearchResult[] = [
+    {
+      id: '1',
+      title: 'RRR',
+      type: 'movie',
+      image: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      rating: 4.5,
+      year: 2022,
+      duration: '3h 7m',
+      language: 'Telugu',
+      isPremium: false,
+      description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s.'
+    },
+    {
+      id: '2',
+      title: 'Pushpa: The Rise',
+      type: 'movie',
+      image: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop&crop=face',
+      rating: 4.2,
+      year: 2021,
+      duration: '2h 59m',
+      language: 'Telugu',
+      isPremium: false,
+      description: 'A laborer rises through the ranks of a sandalwood smuggling syndicate, making some powerful enemies in the process.'
+    },
+    {
+      id: '3',
+      title: 'KGF Chapter 2',
+      type: 'movie',
+      image: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      rating: 4.3,
+      year: 2022,
+      duration: '2h 48m',
+      language: 'Kannada',
+      isPremium: true,
+      description: 'Rocky, a young man, seeks power and wealth in order to fulfill a promise to his dying mother.'
+    },
+    {
+      id: '4',
+      title: 'Prabhas',
+      type: 'actor',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop&crop=face',
+      rating: 4.6,
+      language: 'Telugu',
+      description: 'Indian actor known for his work in Telugu cinema. Famous for Baahubali series.'
+    },
+    {
+      id: '5',
+      title: 'Baahubali 2: The Conclusion',
+      type: 'movie',
+      image: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      rating: 4.7,
+      year: 2017,
+      duration: '2h 47m',
+      language: 'Telugu',
+      isPremium: true,
+      description: 'When Shiva learns the truth about his heritage, he rises to fulfill his destiny.'
+    }
+  ];
 
   // Initialize voice recognition
   useEffect(() => {
@@ -129,15 +205,34 @@ const Search: React.FC<SearchProps> = ({ userPreferences, onBack }) => {
     }
   }, []);
 
+  // Perform search when component mounts with query param
+  useEffect(() => {
+    if (searchQuery) {
+      handleSearch(searchQuery);
+    }
+  }, []);
+
   const handleSearch = (query: string) => {
     if (query.trim()) {
+      setIsSearching(true);
       setRecentSearches(prev => {
         const newSearches = [query, ...prev.filter(s => s !== query)].slice(0, 5);
         return newSearches;
       });
       setShowSuggestions(false);
-      // Here you would typically call your search API
-      console.log('Searching for:', query, 'with filters:', filters);
+      
+      // Update URL with search query
+      setSearchParams({ q: query });
+      
+      // Simulate API call with mock data
+      setTimeout(() => {
+        const filteredResults = mockSearchResults.filter(result => 
+          result.title.toLowerCase().includes(query.toLowerCase()) ||
+          result.description?.toLowerCase().includes(query.toLowerCase())
+        );
+        setSearchResults(filteredResults);
+        setIsSearching(false);
+      }, 500);
     }
   };
 
@@ -208,7 +303,7 @@ const Search: React.FC<SearchProps> = ({ userPreferences, onBack }) => {
       <header className="bg-background shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center space-x-3">
-            <Button size="icon" variant="ghost" onClick={onBack}>
+            <Button size="icon" variant="ghost" onClick={() => navigate('/')}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             
@@ -519,6 +614,99 @@ const Search: React.FC<SearchProps> = ({ userPreferences, onBack }) => {
             <p className="text-sm text-muted-foreground">
               Listening... Try saying: "Latest Tamil action movies"
             </p>
+          </div>
+        )}
+
+        {/* Search Results */}
+        {isSearching && (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Searching...</p>
+          </div>
+        )}
+
+        {!isSearching && searchResults.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-4">Search Results</h3>
+            <div className="space-y-4">
+              {searchResults.map((result) => (
+                <Card key={result.id} className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="flex">
+                      <div className="w-24 h-32 flex-shrink-0">
+                        <img 
+                          src={result.image} 
+                          alt={result.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-semibold text-lg">{result.title}</h4>
+                          {result.isPremium && (
+                            <Badge variant="secondary" className="text-xs">Premium</Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                            <span className="text-sm font-medium">{result.rating}</span>
+                          </div>
+                          {result.year && (
+                            <>
+                              <span className="text-muted-foreground">•</span>
+                              <span className="text-sm text-muted-foreground">{result.year}</span>
+                            </>
+                          )}
+                          {result.duration && (
+                            <>
+                              <span className="text-muted-foreground">•</span>
+                              <span className="text-sm text-muted-foreground">{result.duration}</span>
+                            </>
+                          )}
+                        </div>
+
+                        {result.language && (
+                          <Badge variant="outline" className="text-xs mb-2">
+                            {result.language}
+                          </Badge>
+                        )}
+
+                        {result.description && (
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                            {result.description}
+                          </p>
+                        )}
+
+                        <div className="flex space-x-2">
+                          <Button size="sm" className="flex-1">
+                            <Play className="w-4 h-4 mr-2" />
+                            {result.type === 'actor' ? 'View Profile' : 'Play'}
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!isSearching && searchQuery && searchResults.length === 0 && (
+          <div className="text-center py-8">
+            <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No results found</h3>
+            <p className="text-muted-foreground mb-4">
+              Try searching for something else or check your spelling
+            </p>
+            <Button variant="outline" onClick={() => setSearchQuery('')}>
+              Clear search
+            </Button>
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, User, TrendingUp, Star, MapPin, Trophy, Crown, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HeroBanner from '@/components/home/HeroBanner';
@@ -20,6 +21,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNavigateToSearch }) => {
+  const navigate = useNavigate();
   // State for actual watched content - only show continue watching if user has watched something
   const [continueWatchingItems, setContinueWatchingItems] = useState<any[]>([]);
   const [currentlyWatching, setCurrentlyWatching] = useState<Set<string>>(new Set());
@@ -192,7 +194,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
                 size="icon" 
                 variant="ghost" 
                 className="text-muted-foreground"
-                onClick={onNavigateToSearch}
+                onClick={() => navigate('/search')}
               >
                 <Search className="w-5 h-5" />
               </Button>
