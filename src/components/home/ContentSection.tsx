@@ -54,8 +54,8 @@ const ContentSection: React.FC<ContentSectionProps> = ({
         />
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="flex space-x-3 px-4 pb-2 w-max">
+      <div className="overflow-x-auto scrollbar-hide">
+        <div className="flex space-x-3 px-4 pb-2" style={{ width: 'max-content' }}>
           {items.map((item) => (
             <div key={item.id} className="flex-shrink-0">
               <ContentCard

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, User, TrendingUp, Star, MapPin, Trophy, Crown, Zap } from 'lucide-react';
+import { Search, User, TrendingUp, Star, MapPin, Trophy, Crown, Zap, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HeroBanner from '@/components/home/HeroBanner';
 import ContentSection from '@/components/home/ContentSection';
@@ -38,26 +38,132 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   const [returningUser] = useState(Math.random() > 0.7); // 30% chance for demo
 
-  // Mock movie posters - using placeholder images that represent different content types
-  const getImageUrl = (title: string, language?: string) => {
-    const imageMap: { [key: string]: string } = {
-      'Pushpa: The Rise': 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop&crop=face',
-      'RRR': 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
-      'KGF Chapter 2': 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
-      'Sooryavanshi': 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
-      'Spider-Man: No Way Home': 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
-      'The Batman': 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
-      'Gangubai Kathiawadi': 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
-      'Brahmastra': 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
-      'Vikram': 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
-      'Beast': 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
-      'Jersey': 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
-      'Heropanti 2': 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
-      'Runway 34': 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
-      'Bhool Bhulaiyaa 2': 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
-      'Jurassic World Dominion': 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop'
-    };
-    return imageMap[title] || 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop';
+  // Enhanced movie database with proper posters and metadata
+  const movieDatabase = {
+    'Pushpa: The Rise': {
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      language: 'Telugu',
+      genre: 'action',
+      year: 2021,
+      rating: 4.2,
+      isPremium: false
+    },
+    'RRR': {
+      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      language: 'Telugu',
+      genre: 'action',
+      year: 2022,
+      rating: 4.5,
+      isPremium: false
+    },
+    'KGF Chapter 2': {
+      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      language: 'Kannada',
+      genre: 'action',
+      year: 2022,
+      rating: 4.3,
+      isPremium: true
+    },
+    'Sooryavanshi': {
+      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'action',
+      year: 2021,
+      rating: 4.0,
+      isPremium: false
+    },
+    'Pathaan': {
+      imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'action',
+      year: 2023,
+      rating: 4.1,
+      isPremium: true
+    },
+    'Jawan': {
+      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'action',
+      year: 2023,
+      rating: 4.2,
+      isPremium: true
+    },
+    'Gangubai Kathiawadi': {
+      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'drama',
+      year: 2022,
+      rating: 4.3,
+      isPremium: false
+    },
+    'Brahmastra': {
+      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'action',
+      year: 2022,
+      rating: 3.8,
+      isPremium: true
+    },
+    'Vikram': {
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      language: 'Tamil',
+      genre: 'action',
+      year: 2022,
+      rating: 4.4,
+      isPremium: false
+    },
+    'Beast': {
+      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+      language: 'Tamil',
+      genre: 'action',
+      year: 2022,
+      rating: 3.9,
+      isPremium: false
+    },
+    'Jersey': {
+      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
+      language: 'Telugu',
+      genre: 'drama',
+      year: 2019,
+      rating: 4.1,
+      isPremium: false
+    },
+    'Heropanti 2': {
+      imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'action',
+      year: 2022,
+      rating: 3.7,
+      isPremium: true
+    },
+    'Runway 34': {
+      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'thriller',
+      year: 2022,
+      rating: 3.8,
+      isPremium: false
+    },
+    'Bhool Bhulaiyaa 2': {
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      language: 'Hindi',
+      genre: 'horror',
+      year: 2022,
+      rating: 3.9,
+      isPremium: false
+    },
+    'Jurassic World Dominion': {
+      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      language: 'English',
+      genre: 'action',
+      year: 2022,
+      rating: 4.0,
+      isPremium: true
+    }
+  };
+
+  const getImageUrl = (title: string) => {
+    return movieDatabase[title]?.imageUrl || 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop';
   };
 
   // Language-specific content mapping
@@ -85,60 +191,88 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     } else {
       // General content pool
       titles = [
-        'Pushpa: The Rise', 'RRR', 'KGF Chapter 2', 'Sooryavanshi', 'Spider-Man: No Way Home',
-        'The Batman', 'Gangubai Kathiawadi', 'Brahmastra', 'Vikram', 'Beast',
+        'Pushpa: The Rise', 'RRR', 'KGF Chapter 2', 'Sooryavanshi', 'Pathaan',
+        'Jawan', 'Gangubai Kathiawadi', 'Brahmastra', 'Vikram', 'Beast',
         'Jersey', 'Heropanti 2', 'Runway 34', 'Bhool Bhulaiyaa 2', 'Jurassic World Dominion'
       ];
     }
 
     return Array.from({ length: Math.min(count, titles.length) }, (_, i) => {
       const title = titles[i % titles.length];
+      const movieData = movieDatabase[title];
       return {
         id: `${options.language || 'general'}-${i}`,
         title,
-        imageUrl: getImageUrl(title, options.language),
-        duration: options.isLive ? 'LIVE' : '2h 30m',
-        rating: Math.round((4.2 + (Math.random() * 0.8)) * 10) / 10,
-        language: options.language || undefined,
-        isPremium: options.isPremium || Math.random() > 0.7,
+        imageUrl: movieData?.imageUrl || getImageUrl(title),
+        duration: options.isLive ? 'LIVE' : movieData?.duration || '2h 30m',
+        rating: movieData?.rating || Math.round((4.2 + (Math.random() * 0.8)) * 10) / 10,
+        language: options.language || movieData?.language || undefined,
+        isPremium: options.isPremium !== undefined ? options.isPremium : movieData?.isPremium || Math.random() > 0.7,
         isLive: options.isLive || false,
         matchPercentage: options.showMatch ? Math.floor(85 + Math.random() * 15) : undefined,
-        viewCount: options.showViews ? `${Math.floor(1 + Math.random() * 5)}k` : undefined
+        viewCount: options.showViews ? `${Math.floor(1 + Math.random() * 5)}k` : undefined,
+        year: movieData?.year || 2022,
+        genre: movieData?.genre || 'action'
       };
     });
   };
 
-  const trendingContent = generateMockContent(6, { showViews: true });
-  const sportsContent = generateMockContent(4, { isLive: Math.random() > 0.5 });
-  const premiumContent = generateMockContent(6, { isPremium: true });
-  const topPicksContent = generateMockContent(6, { showMatch: true });
+  // Filter content based on user preferences
+  const filterContentByPreferences = (content: any[], preferences: any) => {
+    return content.filter(item => {
+      // Filter by language preferences
+      if (preferences.languages.length > 0) {
+        const languageMatch = preferences.languages.some((lang: string) => 
+          item.language === lang || 
+          (lang === 'te' && item.language === 'Telugu') ||
+          (lang === 'hi' && item.language === 'Hindi') ||
+          (lang === 'ta' && item.language === 'Tamil') ||
+          (lang === 'ml' && item.language === 'Malayalam') ||
+          (lang === 'kn' && item.language === 'Kannada') ||
+          (lang === 'en' && item.language === 'English')
+        );
+        if (!languageMatch) return false;
+      }
+
+      // Filter by genre preferences
+      if (preferences.genres.length > 0) {
+        const genreMatch = preferences.genres.some((genre: string) => 
+          item.genre === genre
+        );
+        if (!genreMatch) return false;
+      }
+
+      return true;
+    });
+  };
+
+  // Generate personalized content based on user preferences
+  const generatePersonalizedContent = (count: number, options: any = {}) => {
+    const allContent = generateMockContent(20, options);
+    const filteredContent = filterContentByPreferences(allContent, userPreferences);
+    
+    // If filtered content is less than requested, add some diverse content
+    if (filteredContent.length < count) {
+      const diverseContent = generateMockContent(count - filteredContent.length, { 
+        ...options, 
+        diverse: true 
+      });
+      return [...filteredContent, ...diverseContent].slice(0, count);
+    }
+    
+    return filteredContent.slice(0, count);
+  };
+
+  const trendingContent = generatePersonalizedContent(6, { showViews: true });
+  const sportsContent = generatePersonalizedContent(4, { isLive: Math.random() > 0.5 });
+  const premiumContent = generatePersonalizedContent(6, { isPremium: true });
+  const topPicksContent = generatePersonalizedContent(6, { showMatch: true });
 
   const handleItemPlay = (item: any) => {
     console.log('Play item:', item);
     
-    // Add XP for content completion
-    const xpAmount = item.isPremium ? 25 : 20;
-    setUserXP(prev => prev + xpAmount);
-    setShowXPNotification({
-      show: true,
-      amount: xpAmount,
-      reason: `Completed '${item.title}'`,
-      type: 'content_completion'
-    });
-    
-    // Add to continue watching when user starts watching
-    if (!currentlyWatching.has(item.id)) {
-      const newWatchItem = {
-        id: item.id,
-        title: item.title,
-        episode: item.language ? `${item.language} Movie` : 'Movie',
-        progress: 0,
-        timeRemaining: item.duration,
-        lastWatched: 'Just now'
-      };
-      setContinueWatchingItems(prev => [newWatchItem, ...prev.slice(0, 4)]); // Keep max 5 items
-      setCurrentlyWatching(prev => new Set([...prev, item.id]));
-    }
+    // Navigate to movie description page
+    navigate(`/movie/${item.id}`);
   };
 
   const handleItemWatchlist = (item: any) => {
@@ -155,6 +289,12 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     });
   };
 
+  const handleSeeAll = (section: string) => {
+    console.log('See all for section:', section);
+    // Navigate to full list page or show more content
+    // For now, just log the action
+  };
+
   const handleContinueWatching = (item: any) => {
     console.log('Continue watching:', item);
   };
@@ -169,11 +309,6 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     });
   };
 
-  const handleSeeAll = (sectionTitle: string) => {
-    console.log('See all for:', sectionTitle);
-    // In a real app, this would navigate to a dedicated page with all content
-    alert(`Navigate to ${sectionTitle} page - Coming Soon!`);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -201,6 +336,14 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               <Button 
                 size="icon" 
                 variant="ghost" 
+                className="text-muted-foreground"
+                onClick={() => navigate('/mylist')}
+              >
+                <Heart className="w-5 h-5" />
+              </Button>
+              <Button 
+                size="icon" 
+                variant="ghost" 
                 className="text-muted-foreground relative"
                 onClick={onNavigateToProfile}
               >
@@ -220,7 +363,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       <div className="max-w-md mx-auto">
         {/* Hero Banner Carousel */}
         <div className="px-4 pt-4">
-          <HeroBanner />
+          <HeroBanner userPreferences={userPreferences} />
         </div>
 
         {/* Continue Watching Section - Only show if user has watched content */}

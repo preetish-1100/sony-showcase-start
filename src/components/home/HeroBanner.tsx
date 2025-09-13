@@ -1,41 +1,99 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Info } from 'lucide-react';
+import { Play, Info, Star, Clock } from 'lucide-react';
 
 interface BannerItem {
   id: string;
   title: string;
   description: string;
-  imageUrl?: string;
+  imageUrl: string;
   type: 'movie' | 'series' | 'sports' | 'live';
   cta: string;
+  rating: number;
+  year: number;
+  duration: string;
+  language: string;
+  isPremium: boolean;
 }
 
-const HeroBanner: React.FC = () => {
+interface HeroBannerProps {
+  userPreferences?: {
+    languages: string[];
+    genres: string[];
+    contentTypes: string[];
+  };
+}
+
+const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Enhanced banner items with proper movie posters
   const bannerItems: BannerItem[] = [
     {
       id: '1',
-      title: 'Rocket Boys Season 2',
-      description: 'The untold story of Dr. Homi Bhabha and Dr. Vikram Sarabhai',
-      type: 'series',
-      cta: 'Watch Now'
+      title: 'RRR',
+      description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s.',
+      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=1200&h=600&fit=crop',
+      type: 'movie',
+      cta: 'Watch Now',
+      rating: 4.5,
+      year: 2022,
+      duration: '3h 7m',
+      language: 'Telugu',
+      isPremium: false
     },
     {
       id: '2',
-      title: 'Live Cricket: India vs Australia',
-      description: 'Don\'t miss the thrilling match live',
-      type: 'live',
-      cta: 'Watch Live'
+      title: 'Pushpa: The Rise',
+      description: 'A laborer rises through the ranks of a sandalwood smuggling syndicate, making some powerful enemies in the process.',
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=1200&h=600&fit=crop',
+      type: 'movie',
+      cta: 'Watch Now',
+      rating: 4.2,
+      year: 2021,
+      duration: '2h 59m',
+      language: 'Telugu',
+      isPremium: false
     },
     {
       id: '3',
-      title: 'Pushpa 2: The Rise',
-      description: 'The most awaited sequel of the year',
+      title: 'KGF Chapter 2',
+      description: 'Rocky, a young man, seeks power and wealth in order to fulfill a promise to his dying mother.',
+      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=1200&h=600&fit=crop',
       type: 'movie',
-      cta: 'Watch Premium'
+      cta: 'Watch Premium',
+      rating: 4.3,
+      year: 2022,
+      duration: '2h 48m',
+      language: 'Kannada',
+      isPremium: true
+    },
+    {
+      id: '4',
+      title: 'Pathaan',
+      description: 'An Indian spy takes on the leader of a group of mercenaries who have nefarious plans to target India.',
+      imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=1200&h=600&fit=crop',
+      type: 'movie',
+      cta: 'Watch Premium',
+      rating: 4.1,
+      year: 2023,
+      duration: '2h 26m',
+      language: 'Hindi',
+      isPremium: true
+    },
+    {
+      id: '5',
+      title: 'Live Cricket: India vs Australia',
+      description: 'Don\'t miss the thrilling match live from Melbourne Cricket Ground',
+      imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1200&h=600&fit=crop',
+      type: 'live',
+      cta: 'Watch Live',
+      rating: 4.8,
+      year: 2024,
+      duration: 'LIVE',
+      language: 'English',
+      isPremium: false
     }
   ];
 
@@ -62,14 +120,12 @@ const HeroBanner: React.FC = () => {
 
   return (
     <div className="mb-6">
-      <Card className="relative h-[200px] overflow-hidden">
+      <Card className="relative h-[240px] overflow-hidden">
         {/* Background */}
         <div 
-          className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"
           style={{
-            background: currentItem.imageUrl 
-              ? `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.4)), url(${currentItem.imageUrl})`
-              : getGradientForType(currentItem.type),
+            backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.5), rgba(0,0,0,0.1)), url(${currentItem.imageUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }}
@@ -79,19 +135,24 @@ const HeroBanner: React.FC = () => {
         <div className="relative h-full flex items-center p-6">
           <div className="max-w-md">
             {/* Type Badge */}
-            <div className="mb-2">
+            <div className="mb-3">
               {currentItem.type === 'live' && (
-                <span className="bg-sonyliv-live text-white text-xs px-3 py-1 rounded-full font-medium">
+                <span className="bg-red-600 text-white text-xs px-3 py-1 rounded-full font-medium animate-pulse">
                   🔴 LIVE
                 </span>
               )}
-              {currentItem.type === 'movie' && (
-                <span className="bg-sonyliv-premium text-white text-xs px-3 py-1 rounded-full font-medium">
+              {currentItem.type === 'movie' && currentItem.isPremium && (
+                <span className="bg-yellow-600 text-white text-xs px-3 py-1 rounded-full font-medium">
                   ⭐ PREMIUM
                 </span>
               )}
+              {currentItem.type === 'movie' && !currentItem.isPremium && (
+                <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-medium">
+                  🎬 FREE
+                </span>
+              )}
               {currentItem.type === 'series' && (
-                <span className="bg-sonyliv-secondary text-white text-xs px-3 py-1 rounded-full font-medium">
+                <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">
                   📺 NEW SEASON
                 </span>
               )}
@@ -101,9 +162,23 @@ const HeroBanner: React.FC = () => {
               {currentItem.title}
             </h1>
             
-            <p className="text-white/90 text-sm mb-4 leading-relaxed">
+            <p className="text-white/90 text-sm mb-4 leading-relaxed line-clamp-2">
               {currentItem.description}
             </p>
+
+            {/* Movie Details */}
+            <div className="flex items-center space-x-4 mb-4 text-white/80 text-xs">
+              <div className="flex items-center space-x-1">
+                <Star className="w-3 h-3 fill-current text-yellow-400" />
+                <span>{currentItem.rating}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Clock className="w-3 h-3" />
+                <span>{currentItem.duration}</span>
+              </div>
+              <span>{currentItem.year}</span>
+              <span className="bg-white/20 px-2 py-1 rounded text-xs">{currentItem.language}</span>
+            </div>
 
             <div className="flex items-center space-x-3">
               <Button className="bg-white text-black hover:bg-white/90 font-medium">
