@@ -16,9 +16,10 @@ interface HomeProps {
     allowLocation: boolean;
   };
   onNavigateToProfile?: () => void;
+  onNavigateToSearch?: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile }) => {
+const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNavigateToSearch }) => {
   // State for actual watched content - only show continue watching if user has watched something
   const [continueWatchingItems, setContinueWatchingItems] = useState<any[]>([]);
   const [currentlyWatching, setCurrentlyWatching] = useState<Set<string>>(new Set());
@@ -187,7 +188,12 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile }) => 
               />
             </div>
             <div className="flex items-center space-x-3">
-              <Button size="icon" variant="ghost" className="text-muted-foreground">
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="text-muted-foreground"
+                onClick={onNavigateToSearch}
+              >
                 <Search className="w-5 h-5" />
               </Button>
               <Button 

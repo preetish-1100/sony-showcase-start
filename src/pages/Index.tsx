@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import Home from './Home';
 import Profile from './Profile';
+import Search from './Search';
 
 interface UserPreferences {
   phoneNumber?: string;
@@ -12,7 +13,7 @@ interface UserPreferences {
 }
 
 const Index = () => {
-  const [currentPage, setCurrentPage] = useState<'onboarding' | 'home' | 'profile'>('onboarding');
+  const [currentPage, setCurrentPage] = useState<'onboarding' | 'home' | 'profile' | 'search'>('onboarding');
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     languages: [],
     genres: [],
@@ -35,6 +36,13 @@ const Index = () => {
         <Home 
           userPreferences={userPreferences}
           onNavigateToProfile={() => setCurrentPage('profile')}
+          onNavigateToSearch={() => setCurrentPage('search')}
+        />
+      )}
+      {currentPage === 'search' && (
+        <Search 
+          userPreferences={userPreferences}
+          onBack={() => setCurrentPage('home')}
         />
       )}
       {currentPage === 'profile' && (
