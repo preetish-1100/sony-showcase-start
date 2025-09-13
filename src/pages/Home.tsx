@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, User, TrendingUp, Star, MapPin, Trophy, Crown, Zap, Heart } from 'lucide-react';
+import { Search, User, TrendingUp, Star, MapPin, Trophy, Crown, Zap, Heart, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HeroBanner from '@/components/home/HeroBanner';
 import ContentSection from '@/components/home/ContentSection';
@@ -46,7 +46,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2021,
       rating: 4.2,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 59m'
     },
     'RRR': {
       imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
@@ -54,7 +55,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2022,
       rating: 4.5,
-      isPremium: false
+      isPremium: false,
+      duration: '3h 7m'
     },
     'KGF Chapter 2': {
       imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
@@ -62,7 +64,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2022,
       rating: 4.3,
-      isPremium: true
+      isPremium: true,
+      duration: '2h 48m'
     },
     'Sooryavanshi': {
       imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
@@ -70,7 +73,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2021,
       rating: 4.0,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 28m'
     },
     'Pathaan': {
       imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
@@ -78,7 +82,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2023,
       rating: 4.1,
-      isPremium: true
+      isPremium: true,
+      duration: '2h 26m'
     },
     'Jawan': {
       imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
@@ -86,7 +91,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2023,
       rating: 4.2,
-      isPremium: true
+      isPremium: true,
+      duration: '2h 49m'
     },
     'Gangubai Kathiawadi': {
       imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
@@ -94,7 +100,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'drama',
       year: 2022,
       rating: 4.3,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 34m'
     },
     'Brahmastra': {
       imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
@@ -102,7 +109,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2022,
       rating: 3.8,
-      isPremium: true
+      isPremium: true,
+      duration: '2h 47m'
     },
     'Vikram': {
       imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
@@ -110,7 +118,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2022,
       rating: 4.4,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 53m'
     },
     'Beast': {
       imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
@@ -118,7 +127,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2022,
       rating: 3.9,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 38m'
     },
     'Jersey': {
       imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
@@ -126,7 +136,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'drama',
       year: 2019,
       rating: 4.1,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 17m'
     },
     'Heropanti 2': {
       imageUrl: 'https://images.unsplash.com/photo-1635863138275-d9864d29c6ed?w=300&h=400&fit=crop',
@@ -134,7 +145,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2022,
       rating: 3.7,
-      isPremium: true
+      isPremium: true,
+      duration: '2h 23m'
     },
     'Runway 34': {
       imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
@@ -142,7 +154,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'thriller',
       year: 2022,
       rating: 3.8,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 11m'
     },
     'Bhool Bhulaiyaa 2': {
       imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
@@ -150,7 +163,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'horror',
       year: 2022,
       rating: 3.9,
-      isPremium: false
+      isPremium: false,
+      duration: '2h 24m'
     },
     'Jurassic World Dominion': {
       imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
@@ -158,7 +172,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       genre: 'action',
       year: 2022,
       rating: 4.0,
-      isPremium: true
+      isPremium: true,
+      duration: '2h 27m'
     }
   };
 
@@ -336,10 +351,14 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className="text-muted-foreground"
-                onClick={() => navigate('/mylist')}
+                className="text-muted-foreground hover:text-red-500 transition-colors"
+                onClick={() => {
+                  console.log('My List button clicked');
+                  navigate('/mylist');
+                }}
+                title="My List"
               >
-                <Heart className="w-5 h-5" />
+                <Bookmark className="w-5 h-5" />
               </Button>
               <Button 
                 size="icon" 
