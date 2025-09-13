@@ -48,7 +48,31 @@ const ContentCard: React.FC<ContentCardProps> = ({
   };
 
   const getMoviePosterBackground = (movieTitle: string) => {
-    // Create a colored poster with movie name
+    // If we have a real image URL, use it
+    if (imageUrl && imageUrl !== '/placeholder.svg' && !imageUrl.includes('placeholder')) {
+      return (
+        <img 
+          src={imageUrl} 
+          alt={title}
+          className="w-full h-full object-cover rounded-lg"
+          onError={(e) => {
+            // Fallback to colored background if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              parent.innerHTML = getFallbackPoster();
+            }
+          }}
+        />
+      );
+    }
+
+    // Fallback to colored background
+    return getFallbackPoster();
+  };
+
+  const getFallbackPoster = () => {
     const colors = {
       'Pushpa: The Rise': 'bg-orange-600',
       'RRR': 'bg-blue-800',
@@ -71,14 +95,14 @@ const ContentCard: React.FC<ContentCardProps> = ({
       'Geetha Govindam': 'bg-red-500'
     };
 
-    const bgColor = colors[movieTitle as keyof typeof colors] || 'bg-gray-600';
-    const shortTitle = movieTitle.length > 15 ? movieTitle.split(' ')[0] : movieTitle;
+    const bgColor = colors[title as keyof typeof colors] || 'bg-gray-600';
+    const shortTitle = title.length > 15 ? title.split(' ')[0] : title;
 
     return (
       <div className={`w-full h-full ${bgColor} flex items-center justify-center text-white font-bold text-center p-2`}>
         <div>
           <div className="text-lg md:text-xl">{shortTitle}</div>
-          {movieTitle.includes('Chapter') && <div className="text-sm opacity-80">Chapter</div>}
+          {title.includes('Chapter') && <div className="text-sm opacity-80">Chapter</div>}
         </div>
       </div>
     );
