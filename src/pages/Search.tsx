@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon, Mic, MicOff, X, Filter, ArrowLeft, Clock, TrendingUp, Play, Star, Plus, Users, Volume2, VolumeX, Subtitles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -185,6 +185,7 @@ const Search: React.FC = () => {
   
   const searchInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mock search results data
   const mockSearchResults: SearchResult[] = [
@@ -312,9 +313,18 @@ const Search: React.FC = () => {
     if (searchQuery) {
       handleSearch(searchQuery);
     }
+  }, []); // Empty dependency array is correct here
+
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
   }, []);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
       setIsSearching(true);
       setRecentSearches(prev => {
@@ -336,9 +346,9 @@ const Search: React.FC = () => {
         setIsSearching(false);
       }, 500);
     }
-  };
+  }, [setSearchParams]);
 
-  const handleVoiceSearch = () => {
+  const handleVoiceSearch = useCallback(() => {
     if (isVoiceSearching) {
       recognitionRef.current?.stop();
       setIsVoiceSearching(false);
@@ -346,125 +356,140 @@ const Search: React.FC = () => {
       setIsVoiceSearching(true);
       recognitionRef.current?.start();
     }
-  };
+  }, [isVoiceSearching]);
 
-  const handleInputChange = (value: string) => {
+  // Memoized suggestion generator to prevent unnecessary recalculations
+  const generateSuggestions = useCallback((value: string): SmartSuggestion[] => {
+    if (value.length === 0) return [];
+    
+    const smartSuggestions: SmartSuggestion[] = [];
+    const lowerValue = value.toLowerCase();
+    
+    // Actor name suggestions with regional support
+    const matchingActors = popularActors.filter(actor => 
+      actor.name.toLowerCase().includes(lowerValue) ||
+      actor.nameNative?.toLowerCase().includes(lowerValue)
+    );
+    
+    matchingActors.forEach(actor => {
+      smartSuggestions.push({
+        id: `actor-${actor.id}`,
+        text: `${actor.name} movies`,
+        type: 'actor',
+        image: actor.image,
+        confidence: 0.9
+      });
+    });
+    
+    // Movie/show suggestions
+    const matchingMovies = mockSearchResults.filter(result => 
+      result.title.toLowerCase().includes(lowerValue)
+    );
+    
+    matchingMovies.forEach(movie => {
+      smartSuggestions.push({
+        id: `movie-${movie.id}`,
+        text: movie.title,
+        type: movie.type,
+        image: movie.image,
+        confidence: 0.8
+      });
+    });
+    
+    // Genre suggestions with regional names
+    const matchingGenres = genres.filter(genre => 
+      genre.name.toLowerCase().includes(lowerValue) ||
+      Object.values(genre.regionalNames || {}).some(name => 
+        name.toLowerCase().includes(lowerValue)
+      )
+    );
+    
+    matchingGenres.forEach(genre => {
+      smartSuggestions.push({
+        id: `genre-${genre.id}`,
+        text: `${genre.name} movies`,
+        type: 'genre',
+        confidence: 0.7
+      });
+    });
+    
+    // Recent searches suggestions
+    const matchingRecent = recentSearches.filter(search => 
+      search.toLowerCase().includes(lowerValue)
+    );
+    
+    matchingRecent.forEach(search => {
+      smartSuggestions.push({
+        id: `recent-${search}`,
+        text: search,
+        type: 'recent',
+        confidence: 0.6
+      });
+    });
+    
+    // Trending suggestions
+    const matchingTrending = trendingSearches.filter(search => 
+      search.toLowerCase().includes(lowerValue)
+    );
+    
+    matchingTrending.forEach(search => {
+      smartSuggestions.push({
+        id: `trending-${search}`,
+        text: search,
+        type: 'trending',
+        confidence: 0.5
+      });
+    });
+    
+    // Smart corrections for common typos
+    if (lowerValue.includes('prab')) {
+      smartSuggestions.push({
+        id: 'correction-prabhas',
+        text: 'Prabhas movies',
+        type: 'correction',
+        isCorrection: true,
+        originalQuery: value,
+        confidence: 0.4
+      });
+    }
+    
+    // Sort by confidence and limit to 8 suggestions
+    return smartSuggestions
+      .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
+      .slice(0, 8);
+  }, [recentSearches, trendingSearches]);
+
+  // Debounced input change handler
+  const handleInputChange = useCallback((value: string) => {
     setSearchQuery(value);
     
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
     if (value.length > 0) {
-      // Generate smart suggestions based on input
-      const smartSuggestions: SmartSuggestion[] = [];
-      
-      // Actor name suggestions with regional support
-      const matchingActors = popularActors.filter(actor => 
-        actor.name.toLowerCase().includes(value.toLowerCase()) ||
-        actor.nameNative?.toLowerCase().includes(value.toLowerCase())
-      );
-      
-      matchingActors.forEach(actor => {
-        smartSuggestions.push({
-          id: `actor-${actor.id}`,
-          text: `${actor.name} movies`,
-          type: 'actor',
-          image: actor.image,
-          confidence: 0.9
-        });
-      });
-      
-      // Movie/show suggestions
-      const matchingMovies = mockSearchResults.filter(result => 
-        result.title.toLowerCase().includes(value.toLowerCase())
-      );
-      
-      matchingMovies.forEach(movie => {
-        smartSuggestions.push({
-          id: `movie-${movie.id}`,
-          text: movie.title,
-          type: movie.type,
-          image: movie.image,
-          confidence: 0.8
-        });
-      });
-      
-      // Genre suggestions with regional names
-      const matchingGenres = genres.filter(genre => 
-        genre.name.toLowerCase().includes(value.toLowerCase()) ||
-        Object.values(genre.regionalNames || {}).some(name => 
-          name.toLowerCase().includes(value.toLowerCase())
-        )
-      );
-      
-      matchingGenres.forEach(genre => {
-        smartSuggestions.push({
-          id: `genre-${genre.id}`,
-          text: `${genre.name} movies`,
-          type: 'genre',
-          confidence: 0.7
-        });
-      });
-      
-      // Recent searches suggestions
-      const matchingRecent = recentSearches.filter(search => 
-        search.toLowerCase().includes(value.toLowerCase())
-      );
-      
-      matchingRecent.forEach(search => {
-        smartSuggestions.push({
-          id: `recent-${search}`,
-          text: search,
-          type: 'recent',
-          confidence: 0.6
-        });
-      });
-      
-      // Trending suggestions
-      const matchingTrending = trendingSearches.filter(search => 
-        search.toLowerCase().includes(value.toLowerCase())
-      );
-      
-      matchingTrending.forEach(search => {
-        smartSuggestions.push({
-          id: `trending-${search}`,
-          text: search,
-          type: 'trending',
-          confidence: 0.5
-        });
-      });
-      
-      // Smart corrections for common typos
-      if (value.toLowerCase().includes('prab')) {
-        smartSuggestions.push({
-          id: 'correction-prabhas',
-          text: 'Prabhas movies',
-          type: 'correction',
-          isCorrection: true,
-          originalQuery: value,
-          confidence: 0.4
-        });
-      }
-      
-      // Sort by confidence and limit to 8 suggestions
-      const sortedSuggestions = smartSuggestions
-        .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
-        .slice(0, 8);
-      
-      setSuggestions(sortedSuggestions);
-      setShowSuggestions(true);
+      // Debounce the suggestion generation
+      debounceTimeoutRef.current = setTimeout(() => {
+        const newSuggestions = generateSuggestions(value);
+        setSuggestions(newSuggestions);
+        setShowSuggestions(true);
+      }, 150); // 150ms debounce
     } else {
       setShowSuggestions(false);
     }
-  };
+  }, [generateSuggestions]);
 
-  const toggleFilter = (type: keyof FilterState, value: string) => {
+  const toggleFilter = useCallback((type: keyof FilterState, value: string) => {
     setFilters(prev => ({
       ...prev,
       [type]: prev[type].includes(value)
         ? prev[type].filter(item => item !== value)
         : [...prev[type], value]
     }));
-  };
+  }, []);
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setFilters({
       languages: [],
       contentTypes: [],
@@ -473,22 +498,22 @@ const Search: React.FC = () => {
       quality: [],
       subtitles: []
     });
-  };
+  }, []);
 
-  const getLanguageName = (code: string) => {
+  const getLanguageName = useCallback((code: string) => {
     const lang = languages.find(l => l.code === code);
     return lang ? `${lang.native} (${lang.english})` : code;
-  };
+  }, []);
 
-  const getGenreName = (id: string) => {
+  const getGenreName = useCallback((id: string) => {
     const genre = genres.find(g => g.id === id);
     return genre ? genre.name : id;
-  };
+  }, []);
 
-  const getContentTypeName = (id: string) => {
+  const getContentTypeName = useCallback((id: string) => {
     const type = contentTypes.find(t => t.id === id);
     return type ? type.name : id;
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
