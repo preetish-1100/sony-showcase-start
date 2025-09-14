@@ -185,6 +185,26 @@ class TMDBService {
     return this.request<TMDBSearchResult>('/movie/top_rated', { page });
   }
 
+  // Get trending movies in India (all languages)
+  async getTrendingInIndia(page: number = 1): Promise<TMDBSearchResult> {
+    return this.request<TMDBSearchResult>('/discover/movie', {
+      region: 'IN',
+      page,
+      sort_by: 'popularity.desc',
+      'vote_count.gte': 100
+    });
+  }
+
+  // Get sports content (documentaries and sports-related movies)
+  async getSportsContent(page: number = 1): Promise<TMDBSearchResult> {
+    return this.request<TMDBSearchResult>('/discover/movie', {
+      with_keywords: '6075|180547|190859', // Sports, Boxing, Football keywords
+      with_genres: '99', // Documentary genre
+      page,
+      sort_by: 'popularity.desc'
+    });
+  }
+
   // Convert TMDB movie to our format
   convertToContentItem(movie: TMDBMovie): any {
     return {

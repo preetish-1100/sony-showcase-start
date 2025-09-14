@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Info, Star, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface BannerItem {
   id: string;
@@ -28,6 +29,7 @@ interface HeroBannerProps {
 
 const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
 
   // Enhanced banner items with proper movie posters
   const bannerItems: BannerItem[] = [
@@ -106,6 +108,20 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
     return () => clearInterval(timer);
   }, [bannerItems.length]);
 
+  const handlePlayClick = () => {
+    if (currentItem) {
+      console.log('Play clicked for:', currentItem.title);
+      navigate(`/movie/${currentItem.id}`);
+    }
+  };
+
+  const handleMoreInfoClick = () => {
+    if (currentItem) {
+      console.log('More info clicked for:', currentItem.title);
+      navigate(`/movie/${currentItem.id}`);
+    }
+  };
+
   const currentItem = bannerItems[currentIndex];
 
   const getGradientForType = (type: string) => {
@@ -182,11 +198,18 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
             </div>
 
             <div className="flex items-center space-x-3">
-              <Button className="bg-white text-black hover:bg-white/90 font-medium">
+              <Button 
+                className="bg-white text-black hover:bg-white/90 font-medium"
+                onClick={handlePlayClick}
+              >
                 <Play className="w-4 h-4 mr-2" />
                 {currentItem.cta}
               </Button>
-              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+              <Button 
+                variant="outline" 
+                className="border-white/30 text-white hover:bg-white/10"
+                onClick={handleMoreInfoClick}
+              >
                 <Info className="w-4 h-4 mr-2" />
                 More Info
               </Button>

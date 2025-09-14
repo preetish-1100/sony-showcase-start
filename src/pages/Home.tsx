@@ -41,6 +41,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   const [trendingMovies, setTrendingMovies] = useState<any[]>([]);
   const [popularMovies, setPopularMovies] = useState<any[]>([]);
   const [personalizedMovies, setPersonalizedMovies] = useState<any[]>([]);
+  const [trendingInIndia, setTrendingInIndia] = useState<any[]>([]);
+  const [sportsContent, setSportsContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch TMDB data on component mount
@@ -68,6 +70,19 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           const personalizedFormatted = personalized.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
           setPersonalizedMovies(personalizedFormatted);
         }
+
+        // Fetch trending in India (all languages)
+        const trendingIndia = await tmdbService.getTrendingInIndia();
+        const trendingIndiaFormatted = trendingIndia.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
+        setTrendingInIndia(trendingIndiaFormatted);
+
+        // Fetch sports content
+        const sports = await tmdbService.getSportsContent();
+        const sportsFormatted = sports.results.slice(0, 20).map(movie => ({
+          ...tmdbService.convertToContentItem(movie),
+          isLive: Math.random() > 0.7 // Some sports content can be live
+        }));
+        setSportsContent(sportsFormatted);
         
         setLoading(false);
       } catch (error) {
@@ -368,10 +383,15 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     return filteredContent.slice(0, count);
   };
 
-  const trendingContent = generatePersonalizedContent(6, { showViews: true });
-  const sportsContent = generatePersonalizedContent(4, { isLive: Math.random() > 0.5 });
-  const premiumContent = generatePersonalizedContent(6, { isPremium: true });
-  const topPicksContent = generatePersonalizedContent(6, { showMatch: true });
+  // Use real TMDB data instead of mock data
+  const topPicksContent = personalizedMovies.slice(0, 6).map(movie => ({
+    ...movie,
+    matchPercentage: Math.floor(85 + Math.random() * 15)
+  }));
+  const premiumContent = popularMovies.slice(0, 6).map(movie => ({
+    ...movie,
+    isPremium: Math.random() > 0.5
+  }));
 
   const handleItemPlay = (item: any) => {
     console.log('Play item:', item);
@@ -514,7 +534,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         {/* Trending Now in India - Universal */}
         <ContentSection
           title="Trending Now in India 🔥"
-          items={trendingContent}
+          items={trendingInIndia.slice(0, 6)}
           icon={<TrendingUp className="w-5 h-5 text-sonyliv-live" />}
           onItemPlay={handleItemPlay}
           onItemWatchlist={handleItemWatchlist}

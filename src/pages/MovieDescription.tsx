@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Play, Heart, Plus, Star, Clock, Calendar, Globe, Users, Crown, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { ArrowLeft, Play, Heart, Plus, Star, Clock, Calendar, Globe, Users, Crown, Zap, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import tmdbService, { TMDBMovieDetails } from '@/services/tmdb';
 
 interface MovieDetails {
   id: string;
@@ -26,26 +27,60 @@ interface MovieDetails {
 const MovieDescription: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [userXP] = useState(1250); // Mock user XP
+  const [movieData, setMovieData] = useState<MovieDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock movie data
-  const movieData: MovieDetails = {
-    id: id || '1',
-    title: 'RRR',
-    description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s. The film follows the lives of Alluri Sitarama Raju and Komaram Bheem, who fought against the British Raj and the Nizam of Hyderabad respectively.',
-    imageUrl: 'https://via.placeholder.com/800x600/16213e/ffffff?text=RRR',
-    duration: '3h 7m',
-    rating: 4.5,
-    year: 2022,
-    language: 'Telugu',
-    genre: ['Action', 'Drama', 'Historical'],
-    director: 'S.S. Rajamouli',
-    cast: ['N.T. Rama Rao Jr.', 'Ram Charan', 'Alia Bhatt', 'Ajay Devgn'],
-    isPremium: false,
-    xpRequired: 1000,
-    trailerUrl: 'https://www.youtube.com/watch?v=example'
-  };
+  // Check if coming from My List page
+  const isFromMyList = location.state?.fromMyList || false;
+
+  // Fetch movie data from TMDB
+  useEffect(() => {
+    const fetchMovieData = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const movieId = parseInt(id);
+        const movie = await tmdbService.getMovieDetails(movieId);
+        
+        const movieDetails: MovieDetails = {
+          id: movie.id.toString(),
+          title: movie.title,
+          description: movie.overview,
+          imageUrl: tmdbService.getImageURL(movie.backdrop_path, 'w780'),
+          duration: `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`,
+          rating: Math.round(movie.vote_average * 10) / 10,
+          year: new Date(movie.release_date).getFullYear(),
+          language: movie.original_language.toUpperCase(),
+          genre: movie.genres.map(g => g.name),
+          director: 'Director info not available', // TMDB doesn't provide director in movie details endpoint
+          cast: ['Cast info not available'], // Would need separate API call for credits
+          isPremium: Math.random() > 0.7, // Randomly assign premium status
+          xpRequired: 1000,
+          trailerUrl: undefined
+        };
+        
+        setMovieData(movieDetails);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching movie data:', err);
+        setError('Failed to load movie details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovieData();
+  }, [id]);
+
+  // Initialize watchlist status
+  useEffect(() => {
+    setIsInWatchlist(isFromMyList);
+  }, [isFromMyList]);
 
   const handlePlay = () => {
     console.log('Playing movie:', movieData.title);
@@ -54,11 +89,11 @@ const MovieDescription: React.FC = () => {
 
   const handleAddToWatchlist = () => {
     setIsInWatchlist(!isInWatchlist);
-    console.log('Added to watchlist:', movieData.title);
+    console.log(isInWatchlist ? 'Removed from watchlist:' : 'Added to watchlist:', movieData?.title);
   };
 
   const handleUnlockWithXP = () => {
-    if (userXP >= movieData.xpRequired) {
+    if (movieData && userXP >= movieData.xpRequired) {
       console.log('Unlocked with XP:', movieData.title);
       // Unlock premium content
     } else {
@@ -66,7 +101,29 @@ const MovieDescription: React.FC = () => {
     }
   };
 
-  const canUnlockWithXP = userXP >= movieData.xpRequired;
+  const canUnlockWithXP = movieData ? userXP >= movieData.xpRequired : false;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading movie details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !movieData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center px-4">
+          <p className="text-muted-foreground mb-4">{error || 'Movie not found'}</p>
+          <Button onClick={() => navigate('/')}>Go Back Home</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -142,7 +199,11 @@ const MovieDescription: React.FC = () => {
               onClick={handleAddToWatchlist}
               className={isInWatchlist ? 'text-red-500' : 'text-muted-foreground'}
             >
-              <Heart className={`w-6 h-6 ${isInWatchlist ? 'fill-current' : ''}`} />
+              {isInWatchlist ? (
+                <Trash2 className="w-6 h-6" />
+              ) : (
+                <Heart className="w-6 h-6" />
+              )}
             </Button>
           </div>
 
@@ -231,8 +292,17 @@ const MovieDescription: React.FC = () => {
                 className="flex-1"
                 onClick={handleAddToWatchlist}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                {isInWatchlist ? 'Remove from List' : 'Add to List'}
+                {isInWatchlist ? (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove from List
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add to List
+                  </>
+                )}
               </Button>
               <Button variant="outline" size="icon">
                 <Heart className="w-4 h-4" />

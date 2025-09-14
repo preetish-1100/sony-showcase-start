@@ -26,25 +26,25 @@ const MyList: React.FC = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [filterBy, setFilterBy] = useState('all');
 
-  // Mock watchlist data
+  // Mock watchlist data - replace with TMDB IDs for proper movie details
   const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([
     {
-      id: '1',
-      title: 'RRR',
-      imageUrl: 'https://via.placeholder.com/300x400/16213e/ffffff?text=RRR',
-      duration: '3h 7m',
-      rating: 4.5,
+      id: '628',  // The Batman TMDB ID
+      title: 'The Batman',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg',
+      duration: '2h 56m',
+      rating: 4.2,
       year: 2022,
-      language: 'Telugu',
+      language: 'English',
       genre: 'Action',
       isPremium: false,
       addedDate: '2024-01-15',
       type: 'movie'
     },
     {
-      id: '2',
+      id: '447365',  // Pushpa TMDB ID
       title: 'Pushpa: The Rise',
-      imageUrl: 'https://via.placeholder.com/300x400/1a1a2e/ffffff?text=Pushpa',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/ugS5FVfCI3RV0ZwZtBV3HAV75OX.jpg',
       duration: '2h 59m',
       rating: 4.2,
       year: 2021,
@@ -55,40 +55,40 @@ const MyList: React.FC = () => {
       type: 'movie'
     },
     {
-      id: '3',
-      title: 'KGF Chapter 2',
-      imageUrl: 'https://via.placeholder.com/300x400/0f3460/ffffff?text=KGF+2',
-      duration: '2h 48m',
+      id: '440472',  // The Northman TMDB ID  
+      title: 'The Northman',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/zhLKlUaF1SEpO58ppHIAyENkwgw.jpg',
+      duration: '2h 17m',
       rating: 4.3,
       year: 2022,
-      language: 'Kannada',
+      language: 'English',
       genre: 'Action',
       isPremium: true,
       addedDate: '2024-01-13',
       type: 'movie'
     },
     {
-      id: '4',
-      title: 'Pathaan',
-      imageUrl: 'https://via.placeholder.com/300x400/ff6b6b/ffffff?text=Pathaan',
-      duration: '2h 26m',
+      id: '634649',  // Spider-Man: No Way Home TMDB ID
+      title: 'Spider-Man: No Way Home',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg',
+      duration: '2h 28m',
       rating: 4.1,
-      year: 2023,
-      language: 'Hindi',
+      year: 2021,
+      language: 'English',
       genre: 'Action',
       isPremium: true,
       addedDate: '2024-01-12',
       type: 'movie'
     },
     {
-      id: '5',
-      title: 'Gangubai Kathiawadi',
-      imageUrl: 'https://via.placeholder.com/300x400/f7b731/ffffff?text=Gangubai',
-      duration: '2h 34m',
+      id: '524434',  // Eternals TMDB ID
+      title: 'Eternals',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/6AdXwFTRTAzggD2QUTt5B7JFGKL.jpg',
+      duration: '2h 37m', 
       rating: 4.3,
-      year: 2022,
-      language: 'Hindi',
-      genre: 'Drama',
+      year: 2021,
+      language: 'English',
+      genre: 'Action',
       isPremium: false,
       addedDate: '2024-01-11',
       type: 'movie'
@@ -101,8 +101,8 @@ const MyList: React.FC = () => {
 
   const handlePlay = (item: WatchlistItem) => {
     console.log('Playing:', item.title);
-    // Navigate to movie description page
-    navigate(`/movie/${item.id}`);
+    // Navigate to movie description page with state indicating it's from My List
+    navigate(`/movie/${item.id}`, { state: { fromMyList: true } });
   };
 
   const sortedAndFilteredItems = watchlistItems
