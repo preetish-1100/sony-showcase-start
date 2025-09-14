@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import Home from './Home';
 import Profile from './Profile';
@@ -13,8 +12,7 @@ interface UserPreferences {
 }
 
 const Index = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState<'onboarding' | 'home' | 'profile'>('onboarding');
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     languages: [],
     genres: [],
@@ -22,19 +20,9 @@ const Index = () => {
     allowLocation: false,
   });
 
-  // Determine current page based on URL
-  const getCurrentPage = () => {
-    const path = location.pathname;
-    if (path === '/profile') return 'profile';
-    if (path === '/home' || path === '/') return 'home';
-    return 'onboarding';
-  };
-
-  const currentPage = getCurrentPage();
-
   const handleOnboardingComplete = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
-    navigate('/home');
+    setCurrentPage('home');
   };
 
   if (currentPage === 'onboarding') {
@@ -46,7 +34,7 @@ const Index = () => {
       {currentPage === 'home' && (
         <Home 
           userPreferences={userPreferences}
-          onNavigateToProfile={() => navigate('/profile')}
+          onNavigateToProfile={() => setCurrentPage('profile')}
         />
       )}
       {currentPage === 'profile' && (
@@ -56,14 +44,14 @@ const Index = () => {
           <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-50">
             <div className="max-w-md mx-auto flex justify-around py-3">
               <button 
-                onClick={() => navigate('/home')}
+                onClick={() => setCurrentPage('home')}
                 className="flex flex-col items-center space-y-1 text-muted-foreground"
               >
                 <div className="w-6 h-6 flex items-center justify-center">🏠</div>
                 <span className="text-xs">Home</span>
               </button>
               <button 
-                onClick={() => navigate('/profile')}
+                onClick={() => setCurrentPage('profile')}
                 className="flex flex-col items-center space-y-1 text-sonyliv-primary"
               >
                 <div className="w-6 h-6 flex items-center justify-center">👤</div>

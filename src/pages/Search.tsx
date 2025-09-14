@@ -9,7 +9,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
-import { useMovieData } from '@/hooks/useMovieData';
 
 interface UserPreferences {
   phoneNumber?: string;
@@ -157,12 +156,6 @@ const popularActors: Actor[] = [
 const Search: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  // Get user preferences from localStorage or default values
-  const userPreferences = JSON.parse(localStorage.getItem('userPreferences') || '{"languages":["en"],"genres":[],"contentTypes":[],"allowLocation":false}');
-  
-  // Use movie data hook
-  const { searchContent } = useMovieData(userPreferences);
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [isVoiceSearching, setIsVoiceSearching] = useState(false);
@@ -331,7 +324,7 @@ const Search: React.FC = () => {
     };
   }, []);
 
-  const handleSearch = useCallback(async (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     if (query.trim()) {
       setIsSearching(true);
       setRecentSearches(prev => {
@@ -343,33 +336,17 @@ const Search: React.FC = () => {
       // Update URL with search query
       setSearchParams({ q: query });
       
-      try {
-        // Use real movie data search
-        const results = await searchContent(query);
-        
-        // Convert to SearchResult format
-        const searchResults = results.map(item => ({
-          id: item.id,
-          title: item.title,
-          type: 'movie' as const,
-          image: item.imageUrl,
-          rating: item.rating || 0,
-          year: item.year,
-          duration: item.duration,
-          language: item.language,
-          isPremium: item.isPremium,
-          description: item.overview
-        }));
-        
-        setSearchResults(searchResults);
-      } catch (error) {
-        console.error('Search error:', error);
-        setSearchResults([]);
-      } finally {
+      // Simulate API call with mock data
+      setTimeout(() => {
+        const filteredResults = mockSearchResults.filter(result => 
+          result.title.toLowerCase().includes(query.toLowerCase()) ||
+          result.description?.toLowerCase().includes(query.toLowerCase())
+        );
+        setSearchResults(filteredResults);
         setIsSearching(false);
-      }
+      }, 500);
     }
-  }, [setSearchParams, searchContent]);
+  }, [setSearchParams]);
 
   const handleVoiceSearch = useCallback(() => {
     if (isVoiceSearching) {
@@ -544,7 +521,7 @@ const Search: React.FC = () => {
       <header className="bg-background shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center space-x-3">
-            <Button size="icon" variant="ghost" onClick={() => navigate('/home')}>
+            <Button size="icon" variant="ghost" onClick={() => navigate('/')}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             
