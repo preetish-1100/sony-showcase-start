@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import Home from './Home';
 import Profile from './Profile';
@@ -20,8 +20,29 @@ const Index = () => {
     allowLocation: false,
   });
 
+  // Check localStorage for existing preferences on mount
+  useEffect(() => {
+    const savedPreferences = localStorage.getItem('userPreferences');
+    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+    
+    if (onboardingCompleted === 'true' && savedPreferences) {
+      try {
+        const preferences = JSON.parse(savedPreferences);
+        setUserPreferences(preferences);
+        setCurrentPage('home');
+      } catch (error) {
+        console.error('Error parsing saved preferences:', error);
+        localStorage.removeItem('userPreferences');
+        localStorage.removeItem('onboardingCompleted');
+      }
+    }
+  }, []);
+
   const handleOnboardingComplete = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
+    // Save to localStorage
+    localStorage.setItem('userPreferences', JSON.stringify(preferences));
+    localStorage.setItem('onboardingCompleted', 'true');
     setCurrentPage('home');
   };
 

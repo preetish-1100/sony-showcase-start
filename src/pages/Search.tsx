@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import tmdbService from '@/services/tmdb';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon, Mic, MicOff, X, Filter, ArrowLeft, Clock, TrendingUp, Play, Star, Plus, Users, Volume2, VolumeX, Subtitles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -324,7 +325,7 @@ const Search: React.FC = () => {
     };
   }, []);
 
-  const handleSearch = useCallback((query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     if (query.trim()) {
       setIsSearching(true);
       setRecentSearches(prev => {
@@ -336,15 +337,28 @@ const Search: React.FC = () => {
       // Update URL with search query
       setSearchParams({ q: query });
       
-      // Simulate API call with mock data
-      setTimeout(() => {
-        const filteredResults = mockSearchResults.filter(result => 
-          result.title.toLowerCase().includes(query.toLowerCase()) ||
-          result.description?.toLowerCase().includes(query.toLowerCase())
-        );
-        setSearchResults(filteredResults);
+      // Use TMDB API for real search
+      try {
+        const response = await tmdbService.searchMovies(query);
+        const formattedResults = response.results.map(movie => ({
+          id: movie.id.toString(),
+          title: movie.title,
+          type: 'movie' as const,
+          image: tmdbService.getImageURL(movie.poster_path),
+          rating: movie.vote_average,
+          year: new Date(movie.release_date).getFullYear(),
+          duration: '2h 30m', // Default duration
+          language: movie.original_language,
+          isPremium: Math.random() > 0.7,
+          description: movie.overview
+        }));
+        setSearchResults(formattedResults);
         setIsSearching(false);
-      }, 500);
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+        setIsSearching(false);
+      }
     }
   }, [setSearchParams]);
 

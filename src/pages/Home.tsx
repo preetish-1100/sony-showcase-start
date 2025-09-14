@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, User, TrendingUp, Star, MapPin, Trophy, Crown, Zap, Heart, Bookmark } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import HeroBanner from '@/components/home/HeroBanner';
 import ContentSection from '@/components/home/ContentSection';
 import ContinueWatchingSection from '@/components/home/ContinueWatchingSection';
 import XPNotification from '@/components/gamification/XPNotification';
 import WelcomeBackScreen from '@/components/gamification/WelcomeBackScreen';
+import { Button } from '@/components/ui/button';
+import { User, Search, List, TrendingUp, Star, MapPin, Trophy, Crown, Zap, Heart, Bookmark } from 'lucide-react';
+import tmdbService, { TMDBMovie } from '@/services/tmdb';
 
 interface HomeProps {
   userPreferences: {
@@ -37,6 +38,46 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   const [returningUser] = useState(Math.random() > 0.7); // 30% chance for demo
+  const [trendingMovies, setTrendingMovies] = useState<any[]>([]);
+  const [popularMovies, setPopularMovies] = useState<any[]>([]);
+  const [personalizedMovies, setPersonalizedMovies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch TMDB data on component mount
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch trending movies for hero banner
+        const trending = await tmdbService.getTrendingMovies();
+        const trendingFormatted = trending.results.slice(0, 10).map(movie => tmdbService.convertToContentItem(movie));
+        setTrendingMovies(trendingFormatted);
+        
+        // Fetch popular movies
+        const popular = await tmdbService.getPopularMovies();
+        const popularFormatted = popular.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
+        setPopularMovies(popularFormatted);
+        
+        // Fetch personalized content based on user preferences
+        if (userPreferences.languages.length > 0 && userPreferences.genres.length > 0) {
+          const personalized = await tmdbService.getMoviesByPreferences(
+            userPreferences.languages,
+            userPreferences.genres
+          );
+          const personalizedFormatted = personalized.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
+          setPersonalizedMovies(personalizedFormatted);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchMovies();
+  }, [userPreferences.languages, userPreferences.genres]);
 
   // Enhanced movie database with proper posters and metadata
   const movieDatabase = {
@@ -433,7 +474,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       <div className="max-w-md mx-auto">
         {/* Hero Banner Carousel */}
         <div className="px-4 pt-4">
-          <HeroBanner userPreferences={userPreferences} />
+          <HeroBanner userPreferences={userPreferences} movies={trendingMovies} />
         </div>
 
         {/* Continue Watching Section - Only show if user has watched content */}

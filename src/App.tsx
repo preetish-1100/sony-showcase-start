@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Search from "./pages/Search";
 import MyList from "./pages/MyList";
 import MovieDescription from "./pages/MovieDescription";
+import SeeAll from "./pages/SeeAll";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/search" element={<Search />} />
           <Route path="/mylist" element={<MyList />} />
           <Route path="/movie/:id" element={<MovieDescription />} />
+          <Route path="/seeall" element={<SeeAll />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

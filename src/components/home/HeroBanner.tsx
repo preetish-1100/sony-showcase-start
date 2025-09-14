@@ -19,13 +19,14 @@ interface BannerItem {
 
 interface HeroBannerProps {
   userPreferences?: {
-    languages: string[];
-    genres: string[];
-    contentTypes: string[];
+    languages?: string[];
+    genres?: string[];
+    contentTypes?: string[];
   };
+  movies?: any[];
 }
 
-const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences }) => {
+const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Enhanced banner items with proper movie posters
