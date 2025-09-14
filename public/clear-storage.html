@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Sony LIV Storage</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            text-align: center; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #1565C0; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover { background: #0d47a1; }
+        .status { 
+            margin: 20px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+        }
+        .success { background: #e8f5e8; color: #4caf50; }
+        .info { background: #e3f2fd; color: #2196f3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Sony LIV Storage Manager</h1>
+        <p>Use this tool to clear localStorage and force onboarding to show.</p>
+        
+        <div id="status"></div>
+        
+        <button onclick="checkStorage()">Check Current Storage</button>
+        <button onclick="clearStorage()">Clear All Storage</button>
+        <button onclick="goToApp()">Go to App</button>
+        
+        <h3>Current Storage:</h3>
+        <div id="storageInfo" style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px;"></div>
+        
+        <h3>Quick Actions:</h3>
+        <button onclick="window.open('/?reset=true', '_blank')">Open App with Reset</button>
+        <button onclick="window.open('/?onboarding=true', '_blank')">Force Onboarding</button>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = 'status ' + type;
+        }
+
+        function checkStorage() {
+            const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+            const userPreferences = localStorage.getItem('userPreferences');
+            
+            let info = '<strong>localStorage Contents:</strong><br>';
+            info += `onboardingCompleted: ${onboardingCompleted}<br>`;
+            info += `userPreferences: ${userPreferences}<br><br>`;
+            
+            if (userPreferences) {
+                try {
+                    const parsed = JSON.parse(userPreferences);
+                    info += `<strong>Parsed Preferences:</strong><br>`;
+                    info += `Languages: ${JSON.stringify(parsed.languages)}<br>`;
+                    info += `Genres: ${JSON.stringify(parsed.genres)}<br>`;
+                    info += `Content Types: ${JSON.stringify(parsed.contentTypes)}<br>`;
+                    info += `Allow Location: ${parsed.allowLocation}<br>`;
+                } catch (e) {
+                    info += `<strong>Error parsing preferences:</strong> ${e.message}`;
+                }
+            }
+            
+            document.getElementById('storageInfo').innerHTML = info;
+            
+            if (onboardingCompleted === 'true') {
+                showStatus('⚠️ Onboarding is marked as completed. This is why it skips to home page.', 'info');
+            } else {
+                showStatus('✅ Onboarding is not completed. Should show onboarding flow.', 'success');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('onboardingCompleted');
+            localStorage.removeItem('userPreferences');
+            localStorage.clear(); // Clear everything to be safe
+            
+            showStatus('✅ All storage cleared! Onboarding will now show on next visit.', 'success');
+            checkStorage(); // Refresh the display
+        }
+
+        function goToApp() {
+            window.location.href = '/';
+        }
+
+        // Auto-check on load
+        window.onload = function() {
+            checkStorage();
+        };
+    </script>
+</body>
+</html>

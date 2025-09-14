@@ -26,25 +26,25 @@ const MyList: React.FC = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [filterBy, setFilterBy] = useState('all');
 
-  // Mock watchlist data - replace with TMDB IDs for proper movie details
+  // Mock watchlist data with consistent fallback IDs
   const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([
     {
-      id: '628',  // The Batman TMDB ID
-      title: 'The Batman',
-      imageUrl: 'https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg',
-      duration: '2h 56m',
-      rating: 4.2,
+      id: '1',  // RRR - matches MovieDescription fallback
+      title: 'RRR',
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      duration: '3h 7m',
+      rating: 4.5,
       year: 2022,
-      language: 'English',
+      language: 'Telugu',
       genre: 'Action',
       isPremium: false,
       addedDate: '2024-01-15',
       type: 'movie'
     },
     {
-      id: '447365',  // Pushpa TMDB ID
+      id: '2',  // Pushpa - matches MovieDescription fallback
       title: 'Pushpa: The Rise',
-      imageUrl: 'https://image.tmdb.org/t/p/w300/ugS5FVfCI3RV0ZwZtBV3HAV75OX.jpg',
+      imageUrl: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=300&h=400&fit=crop',
       duration: '2h 59m',
       rating: 4.2,
       year: 2021,
@@ -55,40 +55,40 @@ const MyList: React.FC = () => {
       type: 'movie'
     },
     {
-      id: '440472',  // The Northman TMDB ID  
-      title: 'The Northman',
-      imageUrl: 'https://image.tmdb.org/t/p/w300/zhLKlUaF1SEpO58ppHIAyENkwgw.jpg',
-      duration: '2h 17m',
+      id: '3',  // KGF Chapter 2 - matches MovieDescription fallback
+      title: 'KGF Chapter 2',
+      imageUrl: 'https://images.unsplash.com/photo-1478720568477-b956dc04de23?w=300&h=400&fit=crop',
+      duration: '2h 48m',
       rating: 4.3,
       year: 2022,
-      language: 'English',
+      language: 'Kannada',
       genre: 'Action',
       isPremium: true,
       addedDate: '2024-01-13',
       type: 'movie'
     },
     {
-      id: '634649',  // Spider-Man: No Way Home TMDB ID
-      title: 'Spider-Man: No Way Home',
-      imageUrl: 'https://image.tmdb.org/t/p/w300/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg',
-      duration: '2h 28m',
+      id: '4',  // Pathaan - matches MovieDescription fallback
+      title: 'Pathaan',
+      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+      duration: '2h 26m',
       rating: 4.1,
-      year: 2021,
-      language: 'English',
+      year: 2023,
+      language: 'Hindi',
       genre: 'Action',
       isPremium: true,
       addedDate: '2024-01-12',
       type: 'movie'
     },
     {
-      id: '524434',  // Eternals TMDB ID
-      title: 'Eternals',
-      imageUrl: 'https://image.tmdb.org/t/p/w300/6AdXwFTRTAzggD2QUTt5B7JFGKL.jpg',
-      duration: '2h 37m', 
-      rating: 4.3,
-      year: 2021,
+      id: '550',  // Real TMDB ID for Fight Club - for testing TMDB integration
+      title: 'Fight Club',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg',
+      duration: '2h 19m', 
+      rating: 4.4,
+      year: 1999,
       language: 'English',
-      genre: 'Action',
+      genre: 'Drama',
       isPremium: false,
       addedDate: '2024-01-11',
       type: 'movie'

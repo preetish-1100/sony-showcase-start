@@ -38,255 +38,17 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   const [returningUser] = useState(Math.random() > 0.7); // 30% chance for demo
-  const [trendingMovies, setTrendingMovies] = useState<any[]>([]);
-  const [popularMovies, setPopularMovies] = useState<any[]>([]);
-  const [personalizedMovies, setPersonalizedMovies] = useState<any[]>([]);
-  const [trendingInIndia, setTrendingInIndia] = useState<any[]>([]);
+  
+  // Content state organized by user preferences
+  const [heroContent, setHeroContent] = useState<any[]>([]);
+  const [moviesByLanguage, setMoviesByLanguage] = useState<{ [key: string]: any[] }>({});
+  const [tvShowsByLanguage, setTVShowsByLanguage] = useState<{ [key: string]: any[] }>({});
   const [sportsContent, setSportsContent] = useState<any[]>([]);
+  const [trendingContent, setTrendingContent] = useState<any[]>([]);
+  const [premiumContent, setPremiumContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch TMDB data on component mount
-  useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch trending movies for hero banner
-        const trending = await tmdbService.getTrendingMovies();
-        const trendingFormatted = trending.results.slice(0, 10).map(movie => tmdbService.convertToContentItem(movie));
-        setTrendingMovies(trendingFormatted);
-        
-        // Fetch popular movies
-        const popular = await tmdbService.getPopularMovies();
-        const popularFormatted = popular.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
-        setPopularMovies(popularFormatted);
-        
-        // Fetch personalized content based on user preferences
-        if (userPreferences.languages.length > 0 && userPreferences.genres.length > 0) {
-          const personalized = await tmdbService.getMoviesByPreferences(
-            userPreferences.languages,
-            userPreferences.genres
-          );
-          const personalizedFormatted = personalized.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
-          setPersonalizedMovies(personalizedFormatted);
-        }
-
-        // Fetch trending in India (all languages)
-        const trendingIndia = await tmdbService.getTrendingInIndia();
-        const trendingIndiaFormatted = trendingIndia.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
-        setTrendingInIndia(trendingIndiaFormatted);
-
-        // Fetch sports content
-        const sports = await tmdbService.getSportsContent();
-        const sportsFormatted = sports.results.slice(0, 20).map(movie => ({
-          ...tmdbService.convertToContentItem(movie),
-          isLive: Math.random() > 0.7 // Some sports content can be live
-        }));
-        setSportsContent(sportsFormatted);
-        
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching movies:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchMovies();
-  }, [userPreferences.languages, userPreferences.genres]);
-
-  // Enhanced movie database with proper posters and metadata
-  const movieDatabase = {
-    'Pushpa: The Rise': {
-      imageUrl: 'https://via.placeholder.com/300x400/1a1a2e/ffffff?text=Pushpa',
-      language: 'Telugu',
-      genre: 'action',
-      year: 2021,
-      rating: 4.2,
-      isPremium: false,
-      duration: '2h 59m'
-    },
-    'RRR': {
-      imageUrl: 'https://via.placeholder.com/300x400/16213e/ffffff?text=RRR',
-      language: 'Telugu',
-      genre: 'action',
-      year: 2022,
-      rating: 4.5,
-      isPremium: false,
-      duration: '3h 7m'
-    },
-    'KGF Chapter 2': {
-      imageUrl: 'https://via.placeholder.com/300x400/0f3460/ffffff?text=KGF+2',
-      language: 'Kannada',
-      genre: 'action',
-      year: 2022,
-      rating: 4.3,
-      isPremium: true,
-      duration: '2h 48m'
-    },
-    'Sooryavanshi': {
-      imageUrl: 'https://via.placeholder.com/300x400/e94560/ffffff?text=Sooryavanshi',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2021,
-      rating: 4.0,
-      isPremium: false,
-      duration: '2h 28m'
-    },
-    'Pathaan': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff6b6b/ffffff?text=Pathaan',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2023,
-      rating: 4.1,
-      isPremium: true,
-      duration: '2h 26m'
-    },
-    'Jawan': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMzI2NzY2Nzk3M15BMl5BanBnXkFtZTgwNzI3MzQ2NDM@._V1_.jpg',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2023,
-      rating: 4.2,
-      isPremium: true,
-      duration: '2h 49m'
-    },
-    'Gangubai Kathiawadi': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BMjU3NTE4NjQ1NF5BMl5BanBnXkFtZTgwNjE4NTY2NzM@._V1_.jpg',
-      language: 'Hindi',
-      genre: 'drama',
-      year: 2022,
-      rating: 4.3,
-      isPremium: false,
-      duration: '2h 34m'
-    },
-    'Brahmastra': {
-      imageUrl: 'https://m.media-amazon.com/images/M/MV5BODI1MTA0N2UtYjU2My00MjM4LWFjOGQtNzY5N2Y2N2VjMzE1XkEyXkFqcGdeQXVyMTUzNTgzNzM0._V1_.jpg',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2022,
-      rating: 3.8,
-      isPremium: true,
-      duration: '2h 47m'
-    },
-    'Vikram': {
-      imageUrl: 'https://via.placeholder.com/300x400/00d2d3/ffffff?text=Vikram',
-      language: 'Tamil',
-      genre: 'action',
-      year: 2022,
-      rating: 4.4,
-      isPremium: false,
-      duration: '2h 53m'
-    },
-    'Beast': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff9ff3/ffffff?text=Beast',
-      language: 'Tamil',
-      genre: 'action',
-      year: 2022,
-      rating: 3.9,
-      isPremium: false,
-      duration: '2h 38m'
-    },
-    'Jersey': {
-      imageUrl: 'https://via.placeholder.com/300x400/54a0ff/ffffff?text=Jersey',
-      language: 'Telugu',
-      genre: 'drama',
-      year: 2019,
-      rating: 4.1,
-      isPremium: false,
-      duration: '2h 17m'
-    },
-    'Heropanti 2': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff6348/ffffff?text=Heropanti+2',
-      language: 'Hindi',
-      genre: 'action',
-      year: 2022,
-      rating: 3.7,
-      isPremium: true,
-      duration: '2h 23m'
-    },
-    'Runway 34': {
-      imageUrl: 'https://via.placeholder.com/300x400/2f3542/ffffff?text=Runway+34',
-      language: 'Hindi',
-      genre: 'thriller',
-      year: 2022,
-      rating: 3.8,
-      isPremium: false,
-      duration: '2h 11m'
-    },
-    'Bhool Bhulaiyaa 2': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff7675/ffffff?text=Bhool+2',
-      language: 'Hindi',
-      genre: 'horror',
-      year: 2022,
-      rating: 3.9,
-      isPremium: false,
-      duration: '2h 24m'
-    },
-    'Jurassic World Dominion': {
-      imageUrl: 'https://via.placeholder.com/300x400/70a1ff/ffffff?text=Jurassic+World',
-      language: 'English',
-      genre: 'action',
-      year: 2022,
-      rating: 4.0,
-      isPremium: true,
-      duration: '2h 27m'
-    },
-    'Baahubali: The Beginning': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff6b35/ffffff?text=Baahubali',
-      language: 'Telugu',
-      genre: 'action',
-      year: 2015,
-      rating: 4.6,
-      isPremium: false,
-      duration: '2h 39m'
-    },
-    'KGF Chapter 1': {
-      imageUrl: 'https://via.placeholder.com/300x400/2c2c54/ffffff?text=KGF+1',
-      language: 'Kannada',
-      genre: 'action',
-      year: 2018,
-      rating: 4.4,
-      isPremium: false,
-      duration: '2h 35m'
-    },
-    'Ala Vaikunthapurramuloo': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff9f43/ffffff?text=Ala+Vaikunthapurramuloo',
-      language: 'Telugu',
-      genre: 'family',
-      year: 2020,
-      rating: 4.3,
-      isPremium: false,
-      duration: '2h 49m'
-    },
-    'Geetha Govindam': {
-      imageUrl: 'https://via.placeholder.com/300x400/ff3838/ffffff?text=Geetha+Govindam',
-      language: 'Telugu',
-      genre: 'romance',
-      year: 2018,
-      rating: 4.2,
-      isPremium: false,
-      duration: '2h 24m'
-    }
-  };
-
-  const getImageUrl = (title: string) => {
-    return movieDatabase[title]?.imageUrl || 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop';
-  };
-
-  // Language-specific content mapping
-  const getLanguageContent = (language: string) => {
-    const languageContentMap: { [key: string]: string[] } = {
-      'te': ['Pushpa: The Rise', 'RRR', 'Jersey', 'Baahubali: The Beginning', 'Ala Vaikunthapurramuloo', 'Geetha Govindam'],
-      'hi': ['Sooryavanshi', 'Gangubai Kathiawadi', 'Pathaan', 'Jawan', 'Heropanti 2', 'Brahmastra'],
-      'ta': ['Vikram', 'Beast'],
-      'kn': ['KGF Chapter 2', 'KGF Chapter 1'],
-      'ml': ['Brahmastra', 'Jersey'],
-      'en': ['Jurassic World Dominion', 'Runway 34']
-    };
-    return languageContentMap[language] || [];
-  };
-
-  // Get language display name
+  // Language display names
   const getLanguageDisplayName = (languageCode: string) => {
     const languageNames: { [key: string]: string } = {
       'te': 'Telugu',
@@ -294,110 +56,201 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       'ta': 'Tamil',
       'kn': 'Kannada',
       'ml': 'Malayalam',
-      'en': 'English'
+      'en': 'English',
+      'bn': 'Bengali',
+      'gu': 'Gujarati',
+      'mr': 'Marathi',
+      'pa': 'Punjabi'
     };
     return languageNames[languageCode] || languageCode;
   };
 
-  const generateMockContent = (count: number, options: any = {}) => {
-    let titles: string[];
-    
-    if (options.language) {
-      // Get language-specific content
-      titles = getLanguageContent(options.language);
-      if (titles.length === 0) {
-        titles = ['Pushpa: The Rise', 'RRR', 'KGF Chapter 2'];
+  // Fetch content based on user preferences
+  useEffect(() => {
+    const fetchContentByPreferences = async () => {
+      try {
+        setLoading(true);
+        console.log('User preferences:', userPreferences);
+        
+        // Reset all content state
+        setHeroContent([]);
+        setMoviesByLanguage({});
+        setTVShowsByLanguage({});
+        setSportsContent([]);
+        setTrendingContent([]);
+        setPremiumContent([]);
+        
+        // 1. Fetch hero content based on primary preference
+        const primaryContentType = userPreferences.contentTypes[0] || 'movies';
+        let heroData = [];
+        
+        if (primaryContentType === 'sports') {
+          const sports = await tmdbService.getSportsContent();
+          heroData = sports.results.slice(0, 5).map(movie => ({
+            ...tmdbService.convertToContentItem(movie),
+            isLive: Math.random() > 0.7
+          }));
+        } else if (primaryContentType === 'tv_shows' || primaryContentType === 'series') {
+          const trending = await tmdbService.getTrendingTVShows();
+          heroData = trending.results.slice(0, 5).map(show => tmdbService.convertTVShowToContentItem(show));
+        } else {
+          // Default to movies
+          const trending = await tmdbService.getTrendingMovies();
+          heroData = trending.results.slice(0, 5).map(movie => tmdbService.convertToContentItem(movie));
+        }
+        setHeroContent(heroData);
+        
+        // 2. Fetch content for each selected language
+        const moviesByLangTemp: { [key: string]: any[] } = {};
+        const tvShowsByLangTemp: { [key: string]: any[] } = {};
+        
+        for (const language of userPreferences.languages) {
+          console.log(`Fetching content for language: ${language}`);
+          
+          // Fetch movies for this language with user's preferred genres
+          if (userPreferences.contentTypes.includes('movies')) {
+            try {
+              const movies = await tmdbService.getMoviesBySpecificLanguageAndGenre(
+                language, 
+                userPreferences.genres
+              );
+              moviesByLangTemp[language] = movies.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
+              console.log(`Fetched ${moviesByLangTemp[language].length} movies for ${language}`);
+            } catch (error) {
+              console.error(`Error fetching movies for ${language}:`, error);
+              moviesByLangTemp[language] = [];
+            }
+          }
+          
+          // Fetch TV shows for this language with user's preferred genres
+          if (userPreferences.contentTypes.includes('tv_shows') || userPreferences.contentTypes.includes('series')) {
+            try {
+              const tvShows = await tmdbService.getTVShowsBySpecificLanguageAndGenre(
+                language, 
+                userPreferences.genres
+              );
+              tvShowsByLangTemp[language] = tvShows.results.slice(0, 20).map(show => tmdbService.convertTVShowToContentItem(show));
+              console.log(`Fetched ${tvShowsByLangTemp[language].length} TV shows for ${language}`);
+            } catch (error) {
+              console.error(`Error fetching TV shows for ${language}:`, error);
+              tvShowsByLangTemp[language] = [];
+            }
+          }
+        }
+        
+        setMoviesByLanguage(moviesByLangTemp);
+        setTVShowsByLanguage(tvShowsByLangTemp);
+        
+        // 3. Fetch sports content if user selected sports
+        if (userPreferences.contentTypes.includes('sports')) {
+          const sports = await tmdbService.getSportsContent();
+          const sportsFormatted = sports.results.slice(0, 20).map(movie => ({
+            ...tmdbService.convertToContentItem(movie),
+            isLive: Math.random() > 0.7,
+            type: 'sports'
+          }));
+          setSportsContent(sportsFormatted);
+        }
+        
+        // 4. Fetch general trending content
+        const trending = await tmdbService.getTrendingMovies();
+        const trendingFormatted = trending.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
+        setTrendingContent(trendingFormatted);
+        
+        // 5. Fetch premium content
+        const popular = await tmdbService.getPopularMovies();
+        const premiumFormatted = popular.results.slice(0, 20).map(movie => ({
+          ...tmdbService.convertToContentItem(movie),
+          isPremium: true
+        }));
+        setPremiumContent(premiumFormatted);
+        
+        setLoading(false);
+        
+      } catch (error) {
+        console.error('Error fetching content:', error);
+        setLoading(false);
       }
-    } else {
-      // General content pool
-      titles = [
-        'Pushpa: The Rise', 'RRR', 'KGF Chapter 2', 'Sooryavanshi', 'Pathaan',
-        'Jawan', 'Gangubai Kathiawadi', 'Brahmastra', 'Vikram', 'Beast',
-        'Jersey', 'Heropanti 2', 'Runway 34', 'Bhool Bhulaiyaa 2', 'Jurassic World Dominion'
-      ];
+    };
+
+    if (userPreferences.languages.length > 0 && userPreferences.contentTypes.length > 0) {
+      fetchContentByPreferences();
     }
+  }, [userPreferences]);
 
-    return Array.from({ length: Math.min(count, titles.length) }, (_, i) => {
-      const title = titles[i % titles.length];
-      const movieData = movieDatabase[title];
-      return {
-        id: `${options.language || 'general'}-${i}`,
-        title,
-        imageUrl: movieData?.imageUrl || getImageUrl(title),
-        duration: options.isLive ? 'LIVE' : movieData?.duration || '2h 30m',
-        rating: movieData?.rating || Math.round((4.2 + (Math.random() * 0.8)) * 10) / 10,
-        language: options.language || movieData?.language || undefined,
-        isPremium: options.isPremium !== undefined ? options.isPremium : movieData?.isPremium || Math.random() > 0.7,
-        isLive: options.isLive || false,
-        matchPercentage: options.showMatch ? Math.floor(85 + Math.random() * 15) : undefined,
-        viewCount: options.showViews ? `${Math.floor(1 + Math.random() * 5)}k` : undefined,
-        year: movieData?.year || 2022,
-        genre: movieData?.genre || 'action'
-      };
-    });
-  };
-
-  // Filter content based on user preferences
-  const filterContentByPreferences = (content: any[], preferences: any) => {
-    return content.filter(item => {
-      // Filter by language preferences
-      if (preferences.languages.length > 0) {
-        const languageMatch = preferences.languages.some((lang: string) => 
-          item.language === lang || 
-          (lang === 'te' && item.language === 'Telugu') ||
-          (lang === 'hi' && item.language === 'Hindi') ||
-          (lang === 'ta' && item.language === 'Tamil') ||
-          (lang === 'ml' && item.language === 'Malayalam') ||
-          (lang === 'kn' && item.language === 'Kannada') ||
-          (lang === 'en' && item.language === 'English')
-        );
-        if (!languageMatch) return false;
+  // Fallback content for when API fails
+  const getFallbackContent = (count: number = 6) => {
+    return [
+      {
+        id: '1',
+        title: 'Pushpa: The Rise',
+        imageUrl: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=300&h=400&fit=crop',
+        duration: '2h 59m',
+        rating: 4.2,
+        language: 'te',
+        isPremium: false,
+        type: 'movie'
+      },
+      {
+        id: '2', 
+        title: 'RRR',
+        imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+        duration: '3h 7m',
+        rating: 4.5,
+        language: 'te',
+        isPremium: false,
+        type: 'movie'
+      },
+      {
+        id: '3',
+        title: 'KGF Chapter 2',
+        imageUrl: 'https://images.unsplash.com/photo-1478720568477-b956dc04de23?w=300&h=400&fit=crop',
+        duration: '2h 48m', 
+        rating: 4.3,
+        language: 'kn',
+        isPremium: true,
+        type: 'movie'
+      },
+      {
+        id: '4',
+        title: 'Pathaan',
+        imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+        duration: '2h 26m',
+        rating: 4.1,
+        language: 'hi',
+        isPremium: true,
+        type: 'movie'
+      },
+      {
+        id: '5',
+        title: 'Vikram',
+        imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+        duration: '2h 53m',
+        rating: 4.4,
+        language: 'ta', 
+        isPremium: false,
+        type: 'movie'
+      },
+      {
+        id: '6',
+        title: 'Jawan',
+        imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+        duration: '2h 49m',
+        rating: 4.2,
+        language: 'hi',
+        isPremium: true,
+        type: 'movie'
       }
-
-      // Filter by genre preferences
-      if (preferences.genres.length > 0) {
-        const genreMatch = preferences.genres.some((genre: string) => 
-          item.genre === genre
-        );
-        if (!genreMatch) return false;
-      }
-
-      return true;
-    });
+    ].slice(0, count);
   };
 
-  // Generate personalized content based on user preferences
-  const generatePersonalizedContent = (count: number, options: any = {}) => {
-    const allContent = generateMockContent(20, options);
-    const filteredContent = filterContentByPreferences(allContent, userPreferences);
-    
-    // If filtered content is less than requested, add some diverse content
-    if (filteredContent.length < count) {
-      const diverseContent = generateMockContent(count - filteredContent.length, { 
-        ...options, 
-        diverse: true 
-      });
-      return [...filteredContent, ...diverseContent].slice(0, count);
-    }
-    
-    return filteredContent.slice(0, count);
-  };
-
-  // Use real TMDB data instead of mock data
-  const topPicksContent = personalizedMovies.slice(0, 6).map(movie => ({
-    ...movie,
-    matchPercentage: Math.floor(85 + Math.random() * 15)
-  }));
-  const premiumContent = popularMovies.slice(0, 6).map(movie => ({
-    ...movie,
-    isPremium: Math.random() > 0.5
-  }));
-
+  // Event handlers
   const handleItemPlay = (item: any) => {
     console.log('Play item:', item);
     
-    // Navigate to movie description page
-    navigate(`/movie/${item.id}`);
+    // Ensure proper ID format for navigation
+    const movieId = item.id.toString().replace('tv_', '');
+    navigate(`/movie/${movieId}`);
   };
 
   const handleItemWatchlist = (item: any) => {
@@ -416,12 +269,12 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
 
   const handleSeeAll = (section: string) => {
     console.log('See all for section:', section);
-    // Navigate to full list page or show more content
-    // For now, just log the action
+    navigate('/seeall', { state: { section, userPreferences } });
   };
 
   const handleContinueWatching = (item: any) => {
     console.log('Continue watching:', item);
+    handleItemPlay(item);
   };
 
   const handleRemoveContinueWatching = (item: any) => {
@@ -433,6 +286,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       return newSet;
     });
   };
+
 
 
   return (
@@ -494,7 +348,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       <div className="max-w-md mx-auto">
         {/* Hero Banner Carousel */}
         <div className="px-4 pt-4">
-          <HeroBanner userPreferences={userPreferences} movies={trendingMovies} />
+          <HeroBanner userPreferences={userPreferences} movies={heroContent} />
         </div>
 
         {/* Continue Watching Section - Only show if user has watched content */}
@@ -506,76 +360,110 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           />
         )}
 
-        {/* Top Picks for You - Personalized */}
-        <ContentSection
-          title="Top Picks for You"
-          subtitle="Based on your preferences"
-          items={topPicksContent}
-          icon={<Zap className="w-5 h-5 text-sonyliv-primary" />}
-          cardSize="medium"
-          onItemPlay={handleItemPlay}
-          onItemWatchlist={handleItemWatchlist}
-          onSeeAll={() => handleSeeAll('Top Picks for You')}
-        />
-
-        {/* Most Watched Near You - Location-based */}
-        {userPreferences.allowLocation && (
+        {/* 1. Trending Content - Universal (FIRST) */}
+        {trendingContent.length > 0 && (
           <ContentSection
-            title="Most Watched Near You"
-            subtitle="Trending in your area"
-            items={generateMockContent(6, { showViews: true })}
-            icon={<MapPin className="w-5 h-5 text-sonyliv-success" />}
+            title="Trending Now 🔥"
+            subtitle="What everyone is watching"
+            items={trendingContent.slice(0, 6)}
+            icon={<TrendingUp className="w-5 h-5 text-orange-500" />}
             onItemPlay={handleItemPlay}
             onItemWatchlist={handleItemWatchlist}
-            onSeeAll={() => handleSeeAll('Most Watched Near You')}
+            onSeeAll={() => handleSeeAll('Trending Now')}
           />
         )}
 
-        {/* Trending Now in India - Universal */}
+        {/* 2. Popular Near You - Location-based (SECOND) */}
         <ContentSection
-          title="Trending Now in India 🔥"
-          items={trendingInIndia.slice(0, 6)}
-          icon={<TrendingUp className="w-5 h-5 text-sonyliv-live" />}
+          title="Popular Near You 📍"
+          subtitle="Trending in your area"
+          items={trendingContent.length > 6 
+            ? trendingContent.slice(6, 12).map(movie => ({
+                ...movie,
+                viewCount: `${Math.floor(1 + Math.random() * 5)}k`
+              }))
+            : getFallbackContent(6).map(movie => ({
+                ...movie,
+                viewCount: `${Math.floor(1 + Math.random() * 5)}k`
+              }))
+          }
+          icon={<MapPin className="w-5 h-5 text-blue-500" />}
           onItemPlay={handleItemPlay}
           onItemWatchlist={handleItemWatchlist}
-          onSeeAll={() => handleSeeAll('Trending Now in India')}
+          onSeeAll={() => handleSeeAll('Popular Near You')}
         />
 
-        {/* Language-specific sections - Only show languages user selected */}
-        {userPreferences.languages.slice(0, 2).map((language) => {
-          const languageContent = generateMockContent(6, { language });
-          return languageContent.length > 0 ? (
-            <ContentSection
-              key={language}
-              title={`Trending in ${getLanguageDisplayName(language)}`}
-              items={languageContent}
-              onItemPlay={handleItemPlay}
-              onItemWatchlist={handleItemWatchlist}
-              onSeeAll={() => handleSeeAll(`Trending in ${getLanguageDisplayName(language)}`)}
-            />
-          ) : null;
+        {/* 3. Preferred Language Contents (THIRD) */}
+        {userPreferences.languages.map((language, index) => {
+          const languageName = getLanguageDisplayName(language);
+          const movies = moviesByLanguage[language] || [];
+          const tvShows = tvShowsByLanguage[language] || [];
+          const fallback = getFallbackContent(6);
+          
+          return (
+            <div key={language}>
+              {/* Movies in this language */}
+              {(userPreferences.contentTypes.includes('movies') || userPreferences.contentTypes.length === 0) && (
+                <ContentSection
+                  title={`${languageName} Movies 🎬`}
+                  subtitle={`Popular movies in ${languageName}`}
+                  items={movies.length > 0 ? movies.slice(0, 6) : fallback}
+                  onItemPlay={handleItemPlay}
+                  onItemWatchlist={handleItemWatchlist}
+                  onSeeAll={() => handleSeeAll(`${languageName} Movies`)}
+                />
+              )}
+              
+              {/* TV Shows in this language */}
+              {(userPreferences.contentTypes.includes('tv_shows') || userPreferences.contentTypes.includes('series')) && (
+                <ContentSection
+                  title={`${languageName} TV Shows 📺`}
+                  subtitle={`Popular series in ${languageName}`}
+                  items={tvShows.length > 0 ? tvShows.slice(0, 6) : fallback.map(item => ({ ...item, type: 'series' }))}
+                  onItemPlay={handleItemPlay}
+                  onItemWatchlist={handleItemWatchlist}
+                  onSeeAll={() => handleSeeAll(`${languageName} TV Shows`)}
+                />
+              )}
+            </div>
+          );
         })}
 
-        {/* Sports Highlights - Universal Business Priority */}
-        <ContentSection
-          title="Sports Highlights ⚽"
-          items={sportsContent}
-          icon={<Trophy className="w-5 h-5 text-sonyliv-secondary" />}
-          onItemPlay={handleItemPlay}
-          onItemWatchlist={handleItemWatchlist}
-          onSeeAll={() => handleSeeAll('Sports Highlights')}
-        />
+        {/* 4. Premium Content (FOURTH) */}
+        {premiumContent.length > 0 && (
+          <ContentSection
+            title="Premium Content ⭐"
+            subtitle="Exclusive premium movies and shows"
+            items={premiumContent.slice(0, 6)}
+            icon={<Crown className="w-5 h-5 text-yellow-500" />}
+            onItemPlay={handleItemPlay}
+            onItemWatchlist={handleItemWatchlist}
+            onSeeAll={() => handleSeeAll('Premium Content')}
+          />
+        )}
 
-        {/* Premium Content - Universal Monetization */}
-        <ContentSection
-          title="Premium Movies & Shows ⭐"
-          subtitle="Upgrade to Premium for exclusive content"
-          items={premiumContent}
-          icon={<Crown className="w-5 h-5 text-sonyliv-premium" />}
-          onItemPlay={handleItemPlay}
-          onItemWatchlist={handleItemWatchlist}
-          onSeeAll={() => handleSeeAll('Premium Movies & Shows')}
-        />
+        {/* 5. Sports Content (FIFTH) */}
+        {userPreferences.contentTypes.includes('sports') && sportsContent.length > 0 && (
+          <ContentSection
+            title="Sports Highlights ⚽"
+            subtitle="Live sports and highlights"
+            items={sportsContent.slice(0, 6)}
+            icon={<Trophy className="w-5 h-5 text-green-500" />}
+            onItemPlay={handleItemPlay}
+            onItemWatchlist={handleItemWatchlist}
+            onSeeAll={() => handleSeeAll('Sports Highlights')}
+          />
+        )}
+
+        {/* Loading state */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading your personalized content...</p>
+            </div>
+          </div>
+        )}
 
         {/* Bottom Spacing */}
         <div className="h-8" />

@@ -49,8 +49,12 @@ export default {
         },
         sonyliv: {
           blue: "hsl(var(--sonyliv-blue))",
+          primary: "hsl(var(--sonyliv-primary))",
+          secondary: "hsl(var(--sonyliv-secondary))",
           gray: "hsl(var(--sonyliv-gray))",
           success: "hsl(var(--sonyliv-success))",
+          live: "hsl(var(--sonyliv-live))",
+          premium: "hsl(var(--sonyliv-premium))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

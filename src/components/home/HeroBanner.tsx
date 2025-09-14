@@ -31,13 +31,13 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
-  // Enhanced banner items with proper movie posters
-  const bannerItems: BannerItem[] = [
+  // Fallback banner items with better images
+  const fallbackBannerItems: BannerItem[] = [
     {
       id: '1',
       title: 'RRR',
       description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s.',
-      imageUrl: 'https://via.placeholder.com/800x600/16213e/ffffff?text=RRR',
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&h=600&fit=crop&crop=center',
       type: 'movie',
       cta: 'Watch Now',
       rating: 4.5,
@@ -50,7 +50,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
       id: '2',
       title: 'Pushpa: The Rise',
       description: 'A laborer rises through the ranks of a sandalwood smuggling syndicate, making some powerful enemies in the process.',
-      imageUrl: 'https://via.placeholder.com/800x600/1a1a2e/ffffff?text=Pushpa',
+      imageUrl: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=800&h=600&fit=crop&crop=center',
       type: 'movie',
       cta: 'Watch Now',
       rating: 4.2,
@@ -63,7 +63,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
       id: '3',
       title: 'KGF Chapter 2',
       description: 'Rocky, a young man, seeks power and wealth in order to fulfill a promise to his dying mother.',
-      imageUrl: 'https://via.placeholder.com/800x600/0f3460/ffffff?text=KGF+2',
+      imageUrl: 'https://images.unsplash.com/photo-1478720568477-b956dc04de23?w=800&h=600&fit=crop&crop=center',
       type: 'movie',
       cta: 'Watch Premium',
       rating: 4.3,
@@ -76,7 +76,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
       id: '4',
       title: 'Pathaan',
       description: 'An Indian spy takes on the leader of a group of mercenaries who have nefarious plans to target India.',
-      imageUrl: 'https://via.placeholder.com/800x600/ff6b6b/ffffff?text=Pathaan',
+      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=800&h=600&fit=crop&crop=center',
       type: 'movie',
       cta: 'Watch Premium',
       rating: 4.1,
@@ -89,7 +89,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
       id: '5',
       title: 'Live Cricket: India vs Australia',
       description: 'Don\'t miss the thrilling match live from Melbourne Cricket Ground',
-      imageUrl: 'https://via.placeholder.com/800x600/ff9ff3/ffffff?text=Live+Cricket',
+      imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop&crop=center',
       type: 'live',
       cta: 'Watch Live',
       rating: 4.8,
@@ -99,6 +99,23 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
       isPremium: false
     }
   ];
+
+  // Use TMDB movies if available, otherwise use fallback
+  const bannerItems = movies && movies.length > 0 
+    ? movies.slice(0, 3).map((movie, index) => ({
+        id: movie.id,
+        title: movie.title,
+        description: movie.description || `Watch ${movie.title} now on SonyLIV`,
+        imageUrl: movie.imageUrl || fallbackBannerItems[index % fallbackBannerItems.length].imageUrl,
+        type: 'movie' as const,
+        cta: movie.isPremium ? 'Watch Premium' : 'Watch Now',
+        rating: movie.rating || 4.0,
+        year: movie.year || 2023,
+        duration: movie.duration || '2h 30m',
+        language: movie.language || 'English',
+        isPremium: movie.isPremium || false
+      }))
+    : fallbackBannerItems;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -207,7 +224,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ userPreferences, movies = [] })
               </Button>
               <Button 
                 variant="outline" 
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white/30 text-black hover:bg-white/10"
                 onClick={handleMoreInfoClick}
               >
                 <Info className="w-4 h-4 mr-2" />

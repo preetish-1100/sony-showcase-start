@@ -50,8 +50,12 @@ All colors MUST be HSL.
 
     /* SonyLIV Custom Colors */
     --sonyliv-blue: 213 72% 42%;  /* #1565C0 */
+    --sonyliv-primary: 213 72% 42%;  /* #1565C0 - Main brand blue */
+    --sonyliv-secondary: 280 65% 60%;  /* #9C44DC - Purple accent */
     --sonyliv-gray: 0 0% 40%;     /* #666666 */
     --sonyliv-success: 142 71% 45%; /* Green for success states */
+    --sonyliv-live: 0 84% 60%;    /* #FF4444 - Live content red */
+    --sonyliv-premium: 45 100% 50%; /* #FFB000 - Premium gold */
     --sonyliv-overlay: 0 0% 100% / 0.9; /* Semi-transparent white */
     
     /* Gradients */
@@ -135,6 +139,23 @@ All colors MUST be HSL.
 }
 
 @layer components {
+  /* App Layout Components */
+  .app-container {
+    @apply min-h-screen bg-background;
+  }
+  
+  .mobile-container {
+    @apply max-w-md mx-auto relative;
+  }
+  
+  .content-wrapper {
+    @apply px-4 py-2;
+  }
+  
+  .section-spacing {
+    @apply mb-8;
+  }
+  
   /* Onboarding Components */
   .onboarding-container {
     @apply min-h-screen bg-background relative overflow-hidden;
@@ -197,5 +218,70 @@ All colors MUST be HSL.
   
   .progress-fill {
     @apply h-full bg-primary transition-all duration-500 ease-out;
+  }
+  
+  /* SonyLIV Brand Components */
+  .brand-gradient {
+    @apply bg-gradient-to-r from-sonyliv-primary to-sonyliv-secondary;
+  }
+  
+  .brand-text {
+    @apply bg-gradient-to-r from-sonyliv-primary to-sonyliv-secondary bg-clip-text text-transparent font-bold;
+  }
+  
+  .premium-badge {
+    @apply bg-gradient-to-r from-yellow-400 to-yellow-600 text-black;
+  }
+  
+  .live-badge {
+    @apply bg-sonyliv-live text-white;
+  }
+  
+  /* Responsive Layout */
+  .responsive-grid {
+    @apply grid gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  .mobile-grid {
+    @apply grid grid-cols-1 gap-4;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-grid {
+      @apply grid-cols-2;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-grid {
+      @apply grid-cols-3;
+    }
+  }
+  
+  /* Animation Improvements */
+  .smooth-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .hover-lift {
+    @apply hover:scale-105 smooth-transition;
+  }
+  
+  .button-press {
+    @apply active:scale-95 smooth-transition;
+  }
+  
+  /* Card Styles */
+  .content-card {
+    @apply bg-card rounded-lg shadow-sm border border-border overflow-hidden smooth-transition hover-lift;
+  }
+  
+  .premium-glow {
+    @apply shadow-lg shadow-yellow-400/20 border-yellow-300;
+  }
+  
+  .live-pulse {
+    @apply animate-pulse;
   }
 }

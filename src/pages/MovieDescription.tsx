@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import tmdbService, { TMDBMovieDetails } from '@/services/tmdb';
+import VideoPlayer from '@/components/video/VideoPlayer';
+import PremiumUnlockModal from '@/components/gamification/PremiumUnlockModal';
 
 interface MovieDetails {
   id: string;
@@ -29,22 +31,163 @@ const MovieDescription: React.FC = () => {
   const { id } = useParams();
   const location = useLocation();
   const [isInWatchlist, setIsInWatchlist] = useState(false);
-  const [userXP] = useState(1250); // Mock user XP
+  const [userXP, setUserXP] = useState(1250); // Mock user XP
   const [movieData, setMovieData] = useState<MovieDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [showPremiumUnlock, setShowPremiumUnlock] = useState(false);
 
   // Check if coming from My List page
   const isFromMyList = location.state?.fromMyList || false;
 
-  // Fetch movie data from TMDB
+  // Fallback movie database for when TMDB fails or for banner fallback IDs
+  const fallbackMovieDatabase: { [key: string]: MovieDetails } = {
+    '1': {
+      id: '1',
+      title: 'RRR',
+      description: 'A fictional story about two legendary revolutionaries and their journey away from home before they started fighting for their country in 1920s. Set in the 1920s, it is about two Indian revolutionaries, Alluri Sitarama Raju and Komaram Bheem, who fought against the British Raj and Nizam of Hyderabad respectively.',
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&h=600&fit=crop&crop=center',
+      duration: '3h 7m',
+      rating: 4.5,
+      year: 2022,
+      language: 'Telugu',
+      genre: ['Action', 'Adventure', 'Drama'],
+      director: 'S.S. Rajamouli',
+      cast: ['N.T. Rama Rao Jr.', 'Ram Charan', 'Ajay Devgn', 'Alia Bhatt'],
+      isPremium: false,
+      xpRequired: 0
+    },
+    '2': {
+      id: '2',
+      title: 'Pushpa: The Rise',
+      description: 'A laborer rises through the ranks of a sandalwood smuggling syndicate, making some powerful enemies in the process. Pushpa Raj is a coolie who rises in the world of red sandalwood smuggling. Along the way, he doesnt shy from making an enemy or two.',
+      imageUrl: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=800&h=600&fit=crop&crop=center',
+      duration: '2h 59m',
+      rating: 4.2,
+      year: 2021,
+      language: 'Telugu',
+      genre: ['Action', 'Crime', 'Drama'],
+      director: 'Sukumar',
+      cast: ['Allu Arjun', 'Rashmika Mandanna', 'Fahadh Faasil', 'Jagapathi Babu'],
+      isPremium: false,
+      xpRequired: 0
+    },
+    '3': {
+      id: '3',
+      title: 'KGF Chapter 2',
+      description: 'Rocky, whose name strikes fear in the heart of his foes. His allies look up to Rocky as their Savior, the government sees him as a threat to law and order; enemies are clamoring for revenge and conspiring for his downfall.',
+      imageUrl: 'https://images.unsplash.com/photo-1478720568477-b956dc04de23?w=800&h=600&fit=crop&crop=center',
+      duration: '2h 48m',
+      rating: 4.3,
+      year: 2022,
+      language: 'Kannada',
+      genre: ['Action', 'Crime', 'Drama'],
+      director: 'Prashanth Neel',
+      cast: ['Yash', 'Sanjay Dutt', 'Raveena Tandon', 'Srinidhi Shetty'],
+      isPremium: true,
+      xpRequired: 1000
+    },
+    '4': {
+      id: '4',
+      title: 'Pathaan',
+      description: 'An Indian spy takes on the leader of a group of mercenaries who have nefarious plans to target India. A spy thriller action film featuring Shah Rukh Khan as a RAW agent who must stop a terrorist attack.',
+      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=800&h=600&fit=crop&crop=center',
+      duration: '2h 26m',
+      rating: 4.1,
+      year: 2023,
+      language: 'Hindi',
+      genre: ['Action', 'Thriller', 'Adventure'],
+      director: 'Siddharth Anand',
+      cast: ['Shah Rukh Khan', 'Deepika Padukone', 'John Abraham', 'Dimple Kapadia'],
+      isPremium: true,
+      xpRequired: 1000
+    },
+    '5': {
+      id: '5',
+      title: 'Live Cricket: India vs Australia',
+      description: 'Experience the thrill of live cricket as India takes on Australia in this highly anticipated match. Watch your favorite players compete in real-time from the Melbourne Cricket Ground.',
+      imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop&crop=center',
+      duration: 'LIVE',
+      rating: 4.8,
+      year: 2024,
+      language: 'English',
+      genre: ['Sports', 'Live'],
+      director: 'Live Broadcast',
+      cast: ['Team India', 'Team Australia'],
+      isPremium: false,
+      xpRequired: 0
+    },
+    '6': {
+      id: '6',
+      title: 'Pathaan',
+      description: 'An Indian spy takes on the leader of a group of mercenaries who have nefarious plans to target India. A spy thriller action film featuring Shah Rukh Khan as a RAW agent who must stop a terrorist attack.',
+      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=800&h=600&fit=crop&crop=center',
+      duration: '2h 26m',
+      rating: 4.1,
+      year: 2023,
+      language: 'Hindi',
+      genre: ['Action', 'Thriller', 'Adventure'],
+      director: 'Siddharth Anand',
+      cast: ['Shah Rukh Khan', 'Deepika Padukone', 'John Abraham', 'Dimple Kapadia'],
+      isPremium: true,
+      xpRequired: 1000
+    },
+    // Add more popular TMDB IDs for better coverage
+    '550': {
+      id: '550',
+      title: 'Fight Club',
+      description: 'A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy.',
+      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=800&h=600&fit=crop&crop=center',
+      duration: '2h 19m',
+      rating: 4.4,
+      year: 1999,
+      language: 'English',
+      genre: ['Drama', 'Thriller'],
+      director: 'David Fincher',
+      cast: ['Brad Pitt', 'Edward Norton', 'Helena Bonham Carter'],
+      isPremium: false,
+      xpRequired: 0
+    },
+    '299536': {
+      id: '299536',
+      title: 'Avengers: Infinity War',
+      description: 'The Avengers must stop Thanos, an intergalactic warlord, from getting his hands on all the infinity stones.',
+      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&h=600&fit=crop&crop=center',
+      duration: '2h 29m',
+      rating: 4.3,
+      year: 2018,
+      language: 'English',
+      genre: ['Action', 'Adventure', 'Sci-Fi'],
+      director: 'Russo Brothers',
+      cast: ['Robert Downey Jr.', 'Chris Evans', 'Mark Ruffalo', 'Chris Hemsworth'],
+      isPremium: true,
+      xpRequired: 1200
+    }
+  };
+
+  // Fetch movie data from TMDB or fallback database
   useEffect(() => {
     const fetchMovieData = async () => {
       if (!id) return;
       
       try {
         setLoading(true);
+        
+        // Check if it's a fallback ID first
+        if (fallbackMovieDatabase[id]) {
+          setMovieData(fallbackMovieDatabase[id]);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Try to fetch from TMDB
         const movieId = parseInt(id);
+        if (isNaN(movieId)) {
+          throw new Error('Invalid movie ID');
+        }
+        
         const movie = await tmdbService.getMovieDetails(movieId);
         
         const movieDetails: MovieDetails = {
@@ -57,9 +200,9 @@ const MovieDescription: React.FC = () => {
           year: new Date(movie.release_date).getFullYear(),
           language: movie.original_language.toUpperCase(),
           genre: movie.genres.map(g => g.name),
-          director: 'Director info not available', // TMDB doesn't provide director in movie details endpoint
-          cast: ['Cast info not available'], // Would need separate API call for credits
-          isPremium: Math.random() > 0.7, // Randomly assign premium status
+          director: 'Director info not available',
+          cast: ['Cast info not available'],
+          isPremium: Math.random() > 0.7,
           xpRequired: 1000,
           trailerUrl: undefined
         };
@@ -67,8 +210,25 @@ const MovieDescription: React.FC = () => {
         setMovieData(movieDetails);
         setError(null);
       } catch (err) {
-        console.error('Error fetching movie data:', err);
-        setError('Failed to load movie details');
+        console.error('Error fetching movie data for ID:', id, err);
+        // Try to create a basic fallback for unknown TMDB IDs
+        const basicFallback: MovieDetails = {
+          id: id,
+          title: `Movie ${id}`,
+          description: 'Movie details are currently unavailable. Please try again later.',
+          imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=800&h=600&fit=crop&crop=center',
+          duration: '2h 30m',
+          rating: 4.0,
+          year: 2023,
+          language: 'English',
+          genre: ['Action'],
+          director: 'Director not available',
+          cast: ['Cast not available'],
+          isPremium: false,
+          xpRequired: 0
+        };
+        setMovieData(basicFallback);
+        setError(null); // Don't show error, show fallback instead
       } finally {
         setLoading(false);
       }
@@ -83,22 +243,39 @@ const MovieDescription: React.FC = () => {
   }, [isFromMyList]);
 
   const handlePlay = () => {
-    console.log('Playing movie:', movieData.title);
-    // Navigate to player or show premium unlock
+    console.log('Playing movie:', movieData?.title);
+    
+    // Check if it's premium content and user doesn't have enough XP
+    if (movieData?.isPremium && movieData.xpRequired > 0 && userXP < movieData.xpRequired) {
+      setShowPremiumUnlock(true);
+    } else {
+      setShowVideoPlayer(true);
+    }
+  };
+
+  const handleXPEarned = (amount: number) => {
+    setUserXP(prev => prev + amount);
+    console.log(`Earned ${amount} XP from watching ${movieData?.title}`);
+  };
+
+  const handleUnlockWithXP = () => {
+    if (movieData && userXP >= movieData.xpRequired) {
+      setUserXP(prev => prev - movieData.xpRequired);
+      setShowPremiumUnlock(false);
+      setShowVideoPlayer(true);
+      console.log(`Unlocked ${movieData.title} with ${movieData.xpRequired} XP`);
+    }
+  };
+
+  const handleWatchWithPremium = () => {
+    setShowPremiumUnlock(false);
+    setShowVideoPlayer(true);
+    console.log('Watching with premium subscription');
   };
 
   const handleAddToWatchlist = () => {
     setIsInWatchlist(!isInWatchlist);
     console.log(isInWatchlist ? 'Removed from watchlist:' : 'Added to watchlist:', movieData?.title);
-  };
-
-  const handleUnlockWithXP = () => {
-    if (movieData && userXP >= movieData.xpRequired) {
-      console.log('Unlocked with XP:', movieData.title);
-      // Unlock premium content
-    } else {
-      console.log('Not enough XP');
-    }
   };
 
   const canUnlockWithXP = movieData ? userXP >= movieData.xpRequired : false;
@@ -311,6 +488,38 @@ const MovieDescription: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Player Modal */}
+      {movieData && (
+        <VideoPlayer
+          isOpen={showVideoPlayer}
+          onClose={() => setShowVideoPlayer(false)}
+          movie={{
+            id: movieData.id,
+            title: movieData.title,
+            imageUrl: movieData.imageUrl,
+            duration: movieData.duration,
+            isPremium: movieData.isPremium
+          }}
+          onXPEarned={handleXPEarned}
+        />
+      )}
+
+      {/* Premium Unlock Modal */}
+      {movieData && (
+        <PremiumUnlockModal
+          isOpen={showPremiumUnlock}
+          onClose={() => setShowPremiumUnlock(false)}
+          movie={{
+            title: movieData.title,
+            imageUrl: movieData.imageUrl,
+            xpRequired: movieData.xpRequired
+          }}
+          userXP={userXP}
+          onUnlock={handleUnlockWithXP}
+          onWatchWithPremium={handleWatchWithPremium}
+        />
+      )}
     </div>
   );
 };

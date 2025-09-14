@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +12,8 @@ interface SeeAllProps {}
 
 const SeeAll: React.FC<SeeAllProps> = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const category = searchParams.get('category') || 'trending';
+  const location = useLocation();
+  const { section, userPreferences } = location.state || { section: 'Trending Now', userPreferences: { languages: [], genres: [], contentTypes: [] } };
   
   const [movies, setMovies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,35 +21,103 @@ const SeeAll: React.FC<SeeAllProps> = () => {
   const [sortBy, setSortBy] = useState('popularity');
   const [page, setPage] = useState(1);
 
+  // Language display names
+  const getLanguageDisplayName = (languageCode: string) => {
+    const languageNames: { [key: string]: string } = {
+      'te': 'Telugu',
+      'hi': 'Hindi', 
+      'ta': 'Tamil',
+      'kn': 'Kannada',
+      'ml': 'Malayalam',
+      'en': 'English',
+      'bn': 'Bengali',
+      'gu': 'Gujarati',
+      'mr': 'Marathi',
+      'pa': 'Punjabi'
+    };
+    return languageNames[languageCode] || languageCode;
+  };
+
   useEffect(() => {
     fetchMovies();
-  }, [category, page]);
+  }, [section, page]);
 
   const fetchMovies = async () => {
     try {
       setLoading(true);
       let response;
+      let tvResponse;
+      let formattedMovies = [];
       
-      switch (category) {
-        case 'trending':
+      console.log('Fetching movies for section:', section);
+      
+      switch (section) {
+        case 'Trending Now':
           response = await tmdbService.getTrendingMovies();
+          formattedMovies = response.results.map(movie => tmdbService.convertToContentItem(movie));
           break;
-        case 'popular':
+          
+        case 'Popular Near You':
+          // Fetch trending movies for location-based content
+          response = await tmdbService.getTrendingInIndia(page);
+          formattedMovies = response.results.map(movie => ({
+            ...tmdbService.convertToContentItem(movie),
+            viewCount: `${Math.floor(1 + Math.random() * 5)}k`
+          }));
+          break;
+          
+        case 'Premium Content':
           response = await tmdbService.getPopularMovies(page);
+          formattedMovies = response.results.map(movie => ({
+            ...tmdbService.convertToContentItem(movie),
+            isPremium: true
+          }));
           break;
-        case 'personalized':
-          const userPreferences = JSON.parse(localStorage.getItem('userPreferences') || '{"languages":[],"genres":[]}');
-          response = await tmdbService.getMoviesByPreferences(
-            userPreferences.languages,
-            userPreferences.genres,
-            page
-          );
+          
+        case 'Sports Highlights':
+        case 'Sports Content':
+          response = await tmdbService.getSportsContent(page);
+          formattedMovies = response.results.map(movie => ({
+            ...tmdbService.convertToContentItem(movie),
+            isLive: Math.random() > 0.7,
+            type: 'sports'
+          }));
           break;
+          
         default:
-          response = await tmdbService.getPopularMovies(page);
+          // Handle language-specific sections
+          if (section.includes('Movies') || section.includes('TV Shows')) {
+            const language = userPreferences?.languages?.find(lang => 
+              section.includes(getLanguageDisplayName(lang))
+            );
+            
+            if (language) {
+              if (section.includes('TV Shows')) {
+                tvResponse = await tmdbService.getTVShowsBySpecificLanguageAndGenre(
+                  language,
+                  userPreferences.genres || [],
+                  page
+                );
+                formattedMovies = tvResponse.results.map(show => tmdbService.convertTVShowToContentItem(show));
+              } else {
+                response = await tmdbService.getMoviesBySpecificLanguageAndGenre(
+                  language,
+                  userPreferences.genres || [],
+                  page
+                );
+                formattedMovies = response.results.map(movie => tmdbService.convertToContentItem(movie));
+              }
+            } else {
+              // Fallback to trending movies
+              response = await tmdbService.getTrendingMovies();
+              formattedMovies = response.results.map(movie => tmdbService.convertToContentItem(movie));
+            }
+          } else {
+            // Generic fallback
+            response = await tmdbService.getPopularMovies(page);
+            formattedMovies = response.results.map(movie => tmdbService.convertToContentItem(movie));
+          }
       }
-      
-      const formattedMovies = response.results.map(movie => tmdbService.convertToContentItem(movie));
       
       if (page === 1) {
         setMovies(formattedMovies);
@@ -60,6 +128,40 @@ const SeeAll: React.FC<SeeAllProps> = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching movies:', error);
+      // Set fallback content
+      const fallbackMovies = [
+        {
+          id: '1',
+          title: 'RRR',
+          imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+          duration: '3h 7m',
+          rating: 4.5,
+          language: 'Telugu',
+          isPremium: false,
+          type: 'movie'
+        },
+        {
+          id: '2',
+          title: 'Pushpa: The Rise',
+          imageUrl: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=300&h=400&fit=crop',
+          duration: '2h 59m',
+          rating: 4.2,
+          language: 'Telugu',
+          isPremium: false,
+          type: 'movie'
+        },
+        {
+          id: '3',
+          title: 'KGF Chapter 2',
+          imageUrl: 'https://images.unsplash.com/photo-1478720568477-b956dc04de23?w=300&h=400&fit=crop',
+          duration: '2h 48m',
+          rating: 4.3,
+          language: 'Kannada',
+          isPremium: true,
+          type: 'movie'
+        }
+      ];
+      setMovies(fallbackMovies);
       setLoading(false);
     }
   };
@@ -88,16 +190,7 @@ const SeeAll: React.FC<SeeAllProps> = () => {
   };
 
   const getCategoryTitle = () => {
-    switch (category) {
-      case 'trending':
-        return 'Trending Now';
-      case 'popular':
-        return 'Popular Movies';
-      case 'personalized':
-        return 'For You';
-      default:
-        return 'Movies';
-    }
+    return section || 'Movies';
   };
 
   const filteredAndSortedMovies = movies
@@ -178,11 +271,12 @@ const SeeAll: React.FC<SeeAllProps> = () => {
                 <ContentCard
                   key={movie.id}
                   title={movie.title}
-                  imageUrl={movie.image}
+                  imageUrl={movie.imageUrl}
                   rating={movie.rating}
                   duration={movie.duration || '2h 30m'}
                   language={movie.language}
                   isPremium={movie.isPremium}
+                  isLive={movie.isLive}
                   onPlay={() => handlePlay(movie)}
                   onAddToWatchlist={() => handleAddToWatchlist(movie)}
                 />
