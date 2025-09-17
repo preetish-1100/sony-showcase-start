@@ -390,10 +390,27 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
 
   // Event handlers
   const handleItemPlay = (item: any) => {
-    console.log('Play item:', item);
+    console.log('🎬 Play item clicked:', {
+      id: item.id,
+      title: item.title,
+      type: item.type
+    });
 
-    // Ensure proper ID format for navigation
-    const movieId = item.id.toString().replace('tv_', '');
+    if (!item.id) {
+      console.error('❌ No ID found for item:', item);
+      return;
+    }
+
+    // Handle different ID formats
+    let movieId = item.id.toString();
+
+    // For TV shows, remove the tv_ prefix for the movie description page
+    if (movieId.startsWith('tv_')) {
+      movieId = movieId.replace('tv_', '');
+      console.log('📺 TV show detected, using ID:', movieId);
+    }
+
+    console.log('🔗 Navigating to /movie/' + movieId);
     navigate(`/movie/${movieId}`);
   };
 

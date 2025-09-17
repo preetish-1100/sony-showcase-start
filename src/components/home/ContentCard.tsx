@@ -69,7 +69,10 @@ const ContentCard: React.FC<ContentCardProps> = ({
   };
 
   return (
-    <Card className={`${getSizeClasses()} relative overflow-hidden group cursor-pointer hover:scale-105 transition-transform duration-200`}>
+    <Card 
+      className={`${getSizeClasses()} relative overflow-hidden group cursor-pointer hover:scale-105 transition-transform duration-200`}
+      onClick={() => onPlay?.()}
+    >
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"

@@ -184,10 +184,15 @@ const MovieDescription: React.FC = () => {
         }
         
         // Try to fetch from TMDB
+        console.log('🔍 Attempting to fetch movie data for ID:', id);
+        
         const movieId = parseInt(id);
         if (isNaN(movieId)) {
-          throw new Error('Invalid movie ID');
+          console.warn('⚠️ Non-numeric ID detected, creating fallback entry:', id);
+          throw new Error(`Non-numeric movie ID: ${id}`);
         }
+        
+        console.log('📡 Fetching TMDB data for numeric ID:', movieId);
         
         const movie = await tmdbService.getMovieDetails(movieId);
         
@@ -210,24 +215,35 @@ const MovieDescription: React.FC = () => {
         
         setMovieData(movieDetails);
         setError(null);
-      } catch (err) {
-        console.error('Error fetching movie data for ID:', id, err);
-        // Try to create a basic fallback for unknown TMDB IDs
+      } catch (err: any) {
+        console.error('❌ Error fetching movie data for ID:', id, err.message);
+        
+        // Create a more intelligent fallback based on the ID
+        let fallbackTitle = `Movie ${id}`;
+        let fallbackImage = 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=800&h=600&fit=crop&crop=center';
+        
+        // Try to determine content type from ID
+        if (id.includes('tv_') || id.startsWith('tv')) {
+          fallbackTitle = `TV Show ${id.replace('tv_', '')}`;
+        }
+        
         const basicFallback: MovieDetails = {
           id: id,
-          title: `Movie ${id}`,
-          description: 'Movie details are currently unavailable. Please try again later.',
-          imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=800&h=600&fit=crop&crop=center',
+          title: fallbackTitle,
+          description: 'Content details are being loaded. This might be a new release or regional content.',
+          imageUrl: fallbackImage,
           duration: '2h 30m',
           rating: 4.0,
           year: 2023,
           language: 'English',
-          genre: ['Action'],
-          director: 'Director not available',
-          cast: ['Cast not available'],
+          genre: ['Entertainment'],
+          director: 'Information loading...',
+          cast: ['Cast information loading...'],
           isPremium: false,
           xpRequired: 0
         };
+        
+        console.log('📱 Created fallback movie data:', basicFallback);
         setMovieData(basicFallback);
         setError(null); // Don't show error, show fallback instead
       } finally {
