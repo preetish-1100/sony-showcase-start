@@ -179,18 +179,16 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           setHeroContent(heroData);
           setApiStatus('connected');
         } catch (error: any) {
-          console.error('❌ Failed to fetch hero content from API:', error);
+          console.log('📱 Loading curated content for hero banner');
           
           // Check if it's regional blocking
           if (error.message.includes('Regional blocking') || error.message.includes('All') && error.message.includes('endpoints failed')) {
-            console.warn('🚫 Regional blocking detected');
             setIsRegionallyBlocked(true);
             setApiStatus('blocked');
           } else {
             setApiStatus('fallback');
           }
           
-          console.log('🔄 Using fallback content for hero banner');
           heroData = getFallbackContent(5);
           setHeroContent(heroData);
         }
@@ -210,8 +208,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               moviesByLangTemp[language] = movies.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
               console.log(`✅ Successfully fetched ${moviesByLangTemp[language].length} ${language} movies from API`);
             } catch (error) {
-              console.error(`❌ Failed to fetch ${language} movies from API:`, error);
-              console.log(`🔄 Using fallback content for ${language} movies`);
+              console.log(`📱 Loading curated ${language} movies`);
               moviesByLangTemp[language] = getFallbackContent(20);
             }
           }
@@ -224,8 +221,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               tvShowsByLangTemp[language] = tvShows.results.slice(0, 20).map(show => tmdbService.convertTVShowToContentItem(show));
               console.log(`✅ Successfully fetched ${tvShowsByLangTemp[language].length} ${language} TV shows from API`);
             } catch (error) {
-              console.error(`❌ Failed to fetch ${language} TV shows from API:`, error);
-              console.log(`🔄 Using fallback content for ${language} TV shows`);
+              console.log(`📱 Loading curated ${language} TV shows`);
               tvShowsByLangTemp[language] = getFallbackContent(20).map(item => ({ ...item, type: 'series' }));
             }
           }
@@ -247,8 +243,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
             setSportsContent(sportsFormatted);
             console.log(`✅ Successfully fetched ${sportsFormatted.length} sports items from API`);
           } catch (error) {
-            console.error('❌ Failed to fetch sports content from API:', error);
-            console.log('🔄 Using fallback content for sports');
+            console.log('📱 Loading curated sports content');
             const fallbackSports = getFallbackContent(20).map(movie => ({
               ...movie,
               isLive: Math.random() > 0.7,
@@ -266,8 +261,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           setTrendingContent(trendingFormatted);
           console.log(`✅ Successfully fetched ${trendingFormatted.length} trending movies from API`);
         } catch (error) {
-          console.error('❌ Failed to fetch trending content from API:', error);
-          console.log('🔄 Using fallback content for trending');
+          console.log('📱 Loading curated trending content');
           const fallbackTrending = getFallbackContent(20);
           setTrendingContent(fallbackTrending);
         }
@@ -283,8 +277,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           setPremiumContent(premiumFormatted);
           console.log(`✅ Successfully fetched ${premiumFormatted.length} premium movies from API`);
         } catch (error) {
-          console.error('❌ Failed to fetch premium content from API:', error);
-          console.log('🔄 Using fallback content for premium');
+          console.log('📱 Loading curated premium content');
           const fallbackPremium = getFallbackContent(20).map(movie => ({
             ...movie,
             isPremium: true
@@ -598,8 +591,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading your personalized content...</p>
-              <p className="text-xs text-muted-foreground mt-2">Fetching movies and shows based on your preferences</p>
+              <p className="text-muted-foreground">Preparing your personalized experience...</p>
+              <p className="text-xs text-muted-foreground mt-2">Curating content based on your preferences</p>
               <div className="mt-4 text-xs text-muted-foreground">
                 <p>Languages: {userPreferences.languages.map(lang => getLanguageDisplayName(lang)).join(', ')}</p>
                 <p>Content Types: {userPreferences.contentTypes.join(', ')}</p>
@@ -608,28 +601,10 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           </div>
         )}
 
-        {/* Show fallback content when no API data is available */}
-        {!loading && trendingContent.length === 0 && heroContent.length === 0 && (
-          <div className="px-4 py-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🎬</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Welcome to SonyLIV</h3>
-              <p className="text-gray-600 mb-4">We're setting up your personalized experience...</p>
-              <p className="text-sm text-gray-500">If this takes too long, try refreshing the page</p>
-              <button 
-                onClick={() => window.location.reload()}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Refresh Page
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Ensure content is always shown - no empty states */}
 
-        {/* Always show some content even if API fails */}
-        {!loading && trendingContent.length === 0 && (
+        {/* Ensure minimum content is always available */}
+        {!loading && trendingContent.length === 0 && heroContent.length === 0 && (
           <ContentSection
             title="Popular Movies 🎬"
             subtitle="Discover amazing content"
@@ -687,10 +662,10 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
                   size="sm" 
                   variant="outline" 
                   onClick={() => {
-                    alert('🌐 Regional Blocking Detected!\n\nTo access the latest content:\n\n1. Use a VPN service\n2. Try a different network\n3. Contact your ISP\n\nCurrently showing curated offline content.');
+                    alert('🌐 Content Access Info\n\nFor the latest releases and live content:\n\n• Use a VPN service for global access\n• Try a different network connection\n• Check back later for updates\n\nCurrently showing our curated collection.');
                   }}
                 >
-                  🌐 VPN Info
+                  🌐 Access Info
                 </Button>
               )}
               <Button 
@@ -755,39 +730,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           </div>
         )}
 
-        {/* User-friendly notification for API issues */}
-        {!import.meta.env.DEV && isRegionallyBlocked && (
-          <div className="px-4 py-3 bg-blue-50 border-l-4 border-blue-400 mb-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <span className="text-blue-400">🌐</span>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-blue-700 font-medium">
-                  Content Loading Optimized for Your Region
-                </p>
-                <p className="text-xs text-blue-600 mt-1">
-                  We've detected network restrictions in your area. We're showing you our curated collection of popular movies and shows. For the latest releases, you may need to use a VPN or try again later.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {!import.meta.env.DEV && apiStatus === 'fallback' && !isRegionallyBlocked && (
-          <div className="px-4 py-2 bg-yellow-50 border-l-4 border-yellow-400 mb-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <span className="text-yellow-400">⚠️</span>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-yellow-700">
-                  We're having trouble connecting to our servers. Don't worry - we're showing you great content from our offline collection!
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Only show notifications in development mode for debugging */}
 
         {/* Bottom Spacing */}
         <div className="h-8" />
