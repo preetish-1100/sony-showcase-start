@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, Play, Star, Clock, Trash2, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,97 +6,37 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface WatchlistItem {
-  id: string;
-  title: string;
-  imageUrl: string;
-  duration: string;
-  rating: number;
-  year: number;
-  language: string;
-  genre: string;
-  isPremium: boolean;
-  addedDate: string;
-  type: 'movie' | 'series';
-}
+import watchlistService, { WatchlistItem } from '@/services/watchlist';
 
 const MyList: React.FC = () => {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState('recent');
   const [filterBy, setFilterBy] = useState('all');
+  const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock watchlist data with consistent fallback IDs
-  const [watchlistItems, setWatchlistItems] = useState<WatchlistItem[]>([
-    {
-      id: '1',  // RRR - matches MovieDescription fallback
-      title: 'RRR',
-      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
-      duration: '3h 7m',
-      rating: 4.5,
-      year: 2022,
-      language: 'Telugu',
-      genre: 'Action',
-      isPremium: false,
-      addedDate: '2024-01-15',
-      type: 'movie'
-    },
-    {
-      id: '2',  // Pushpa - matches MovieDescription fallback
-      title: 'Pushpa: The Rise',
-      imageUrl: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=300&h=400&fit=crop',
-      duration: '2h 59m',
-      rating: 4.2,
-      year: 2021,
-      language: 'Telugu',
-      genre: 'Action',
-      isPremium: false,
-      addedDate: '2024-01-14',
-      type: 'movie'
-    },
-    {
-      id: '3',  // KGF Chapter 2 - matches MovieDescription fallback
-      title: 'KGF Chapter 2',
-      imageUrl: 'https://images.unsplash.com/photo-1478720568477-b956dc04de23?w=300&h=400&fit=crop',
-      duration: '2h 48m',
-      rating: 4.3,
-      year: 2022,
-      language: 'Kannada',
-      genre: 'Action',
-      isPremium: true,
-      addedDate: '2024-01-13',
-      type: 'movie'
-    },
-    {
-      id: '4',  // Pathaan - matches MovieDescription fallback
-      title: 'Pathaan',
-      imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
-      duration: '2h 26m',
-      rating: 4.1,
-      year: 2023,
-      language: 'Hindi',
-      genre: 'Action',
-      isPremium: true,
-      addedDate: '2024-01-12',
-      type: 'movie'
-    },
-    {
-      id: '550',  // Real TMDB ID for Fight Club - for testing TMDB integration
-      title: 'Fight Club',
-      imageUrl: 'https://image.tmdb.org/t/p/w300/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg',
-      duration: '2h 19m', 
-      rating: 4.4,
-      year: 1999,
-      language: 'English',
-      genre: 'Drama',
-      isPremium: false,
-      addedDate: '2024-01-11',
-      type: 'movie'
-    }
-  ]);
+  // Load watchlist from localStorage on component mount
+  useEffect(() => {
+    const loadWatchlist = () => {
+      try {
+        const items = watchlistService.getWatchlist();
+        setWatchlistItems(items);
+        console.log('Loaded watchlist:', items.length, 'items');
+      } catch (error) {
+        console.error('Error loading watchlist:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadWatchlist();
+  }, []);
 
   const handleRemoveFromList = (itemId: string) => {
-    setWatchlistItems(prev => prev.filter(item => item.id !== itemId));
+    const success = watchlistService.removeFromWatchlist(itemId);
+    if (success) {
+      setWatchlistItems(prev => prev.filter(item => item.id !== itemId));
+    }
   };
 
   const handlePlay = (item: WatchlistItem) => {
@@ -183,8 +123,18 @@ const MyList: React.FC = () => {
           </div>
         </div>
 
-        {/* Watchlist Items */}
-        {sortedAndFilteredItems.length > 0 ? (
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading your watchlist...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Watchlist Items */}
+            {sortedAndFilteredItems.length > 0 ? (
           <ScrollArea className="h-[calc(100vh-200px)]">
             <div className="space-y-4">
               {sortedAndFilteredItems.map((item) => (
@@ -228,7 +178,7 @@ const MyList: React.FC = () => {
                             {item.language}
                           </Badge>
                           <Badge variant="outline" className="text-xs">
-                            {item.genre}
+                            {Array.isArray(item.genre) ? item.genre[0] : item.genre}
                           </Badge>
                           {item.isPremium && (
                             <Badge variant="secondary" className="text-xs">
@@ -265,6 +215,8 @@ const MyList: React.FC = () => {
               Browse Content
             </Button>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

@@ -59,6 +59,7 @@ const ContentSection: React.FC<ContentSectionProps> = ({
           {items.map((item) => (
             <div key={item.id} className="flex-shrink-0">
               <ContentCard
+                id={item.id}
                 title={item.title}
                 imageUrl={item.imageUrl}
                 duration={item.duration}

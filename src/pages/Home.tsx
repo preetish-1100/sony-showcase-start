@@ -8,6 +8,7 @@ import WelcomeBackScreen from '@/components/gamification/WelcomeBackScreen';
 import { Button } from '@/components/ui/button';
 import { User, Search, List, TrendingUp, Star, MapPin, Trophy, Crown, Zap, Heart, Bookmark } from 'lucide-react';
 import tmdbService, { TMDBMovie } from '@/services/tmdb';
+import watchlistService from '@/services/watchlist';
 
 interface HomeProps {
   userPreferences: {
@@ -26,7 +27,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // State for actual watched content - only show continue watching if user has watched something
   const [continueWatchingItems, setContinueWatchingItems] = useState<any[]>([]);
   const [currentlyWatching, setCurrentlyWatching] = useState<Set<string>>(new Set());
-  
+
   // Gamification state
   const [userXP, setUserXP] = useState(1240);
   const [showXPNotification, setShowXPNotification] = useState<{
@@ -35,10 +36,10 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     reason: string;
     type: 'content_completion' | 'engagement' | 'streak' | 'discovery' | 'milestone';
   }>({ show: false, amount: 0, reason: '', type: 'content_completion' });
-  
+
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   const [returningUser] = useState(Math.random() > 0.7); // 30% chance for demo
-  
+
   // Content state organized by user preferences
   const [heroContent, setHeroContent] = useState<any[]>([]);
   const [moviesByLanguage, setMoviesByLanguage] = useState<{ [key: string]: any[] }>({});
@@ -65,7 +66,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   const getLanguageDisplayName = (languageCode: string) => {
     const languageNames: { [key: string]: string } = {
       'te': 'Telugu',
-      'hi': 'Hindi', 
+      'hi': 'Hindi',
       'ta': 'Tamil',
       'kn': 'Kannada',
       'ml': 'Malayalam',
@@ -94,10 +95,10 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // Network diagnostics
   const runNetworkDiagnostics = async () => {
     console.log('🔧 Running network diagnostics...');
-    
+
     // Test 1: Basic connectivity
     try {
-      const response = await fetch('https://httpbin.org/get', { 
+      const response = await fetch('https://httpbin.org/get', {
         method: 'GET',
         signal: AbortSignal.timeout(10000)
       });
@@ -109,7 +110,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
 
     // Test 2: TMDB domain resolution
     try {
-      const response = await fetch('https://api.themoviedb.org', { 
+      const response = await fetch('https://api.themoviedb.org', {
         method: 'HEAD',
         signal: AbortSignal.timeout(15000)
       });
@@ -128,21 +129,21 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
       try {
         setLoading(true);
         console.log('User preferences:', userPreferences);
-        
+
         // Test API connection first - but proceed regardless
         console.log('🚀 Starting content fetch with user preferences:', userPreferences);
         setApiStatus('testing');
-        
+
         const isAPIConnected = await testTMDBConnection();
         console.log('🔍 Initial API Connection Status:', isAPIConnected);
-        
+
         if (isAPIConnected) {
           setApiStatus('connected');
           console.log('✅ TMDB API is working, fetching live data');
         } else {
           console.warn('⚠️ Initial API test failed, but will still attempt API calls with aggressive retry');
         }
-        
+
         // Reset all content state
         setHeroContent([]);
         setMoviesByLanguage({});
@@ -150,11 +151,11 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         setSportsContent([]);
         setTrendingContent([]);
         setPremiumContent([]);
-        
+
         // 1. Fetch hero content based on primary preference
         const primaryContentType = userPreferences.contentTypes[0] || 'movies';
         let heroData = [];
-        
+
         try {
           if (primaryContentType === 'sports') {
             console.log('🏈 Fetching sports content for hero banner...');
@@ -175,12 +176,12 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
             heroData = trending.results.slice(0, 5).map(movie => tmdbService.convertToContentItem(movie));
             console.log(`✅ Got ${heroData.length} movies for hero`);
           }
-          
+
           setHeroContent(heroData);
           setApiStatus('connected');
         } catch (error: any) {
           console.log('📱 Loading curated content for hero banner');
-          
+
           // Check if it's regional blocking
           if (error.message.includes('Regional blocking') || error.message.includes('All') && error.message.includes('endpoints failed')) {
             setIsRegionallyBlocked(true);
@@ -188,18 +189,18 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           } else {
             setApiStatus('fallback');
           }
-          
+
           heroData = getFallbackContent(5);
           setHeroContent(heroData);
         }
-        
+
         // 2. Fetch content for each selected language
         const moviesByLangTemp: { [key: string]: any[] } = {};
         const tvShowsByLangTemp: { [key: string]: any[] } = {};
-        
+
         for (const language of userPreferences.languages) {
           console.log(`Fetching content for language: ${language}`);
-          
+
           // Fetch movies for this language with user's preferred genres
           if (userPreferences.contentTypes.includes('movies')) {
             try {
@@ -212,7 +213,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               moviesByLangTemp[language] = getFallbackContent(20);
             }
           }
-          
+
           // Fetch TV shows for this language with user's preferred genres
           if (userPreferences.contentTypes.includes('tv_shows') || userPreferences.contentTypes.includes('series')) {
             try {
@@ -226,10 +227,10 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
             }
           }
         }
-        
+
         setMoviesByLanguage(moviesByLangTemp);
         setTVShowsByLanguage(tvShowsByLangTemp);
-        
+
         // 3. Fetch sports content if user selected sports
         if (userPreferences.contentTypes.includes('sports')) {
           try {
@@ -252,7 +253,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
             setSportsContent(fallbackSports);
           }
         }
-        
+
         // 4. Fetch general trending content
         try {
           console.log('🔥 Fetching trending movies...');
@@ -265,7 +266,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           const fallbackTrending = getFallbackContent(20);
           setTrendingContent(fallbackTrending);
         }
-        
+
         // 5. Fetch premium content
         try {
           console.log('⭐ Fetching popular movies for premium content...');
@@ -284,17 +285,17 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           }));
           setPremiumContent(fallbackPremium);
         }
-        
+
         setLoading(false);
         console.log('Content fetching completed');
-        
+
         // Update API status based on content availability
         if (trendingContent.length > 0 || heroContent.length > 0) {
           setApiStatus('connected');
         } else {
           setApiStatus('fallback');
         }
-        
+
       } catch (error) {
         console.error('Error fetching content:', error);
         setLoading(false);
@@ -309,66 +310,78 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     }
   }, [userPreferences]);
 
-  // Fallback content for when API fails
+  // Fallback content for when API fails - using proper movie poster URLs
   const getFallbackContent = (count: number = 6) => {
     return [
       {
         id: '1',
-        title: 'Pushpa: The Rise',
-        imageUrl: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=300&h=400&fit=crop',
-        duration: '2h 59m',
-        rating: 4.2,
-        language: 'te',
+        title: 'RRR',
+        imageUrl: 'https://image.tmdb.org/t/p/w300/rCzpDGLbOoPwLjy3OAm5QVUJFSM.jpg',
+        duration: '3h 7m',
+        rating: 4.5,
+        year: 2022,
+        language: 'Telugu',
+        genre: ['Action', 'Drama'],
         isPremium: false,
         type: 'movie'
       },
       {
-        id: '2', 
-        title: 'RRR',
-        imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
-        duration: '3h 7m',
-        rating: 4.5,
-        language: 'te',
+        id: '2',
+        title: 'Pushpa: The Rise',
+        imageUrl: 'https://image.tmdb.org/t/p/w300/dBLBDeyrGMzMtlhayZ3VrxZVcyg.jpg',
+        duration: '2h 59m',
+        rating: 4.2,
+        year: 2021,
+        language: 'Telugu',
+        genre: ['Action', 'Crime'],
         isPremium: false,
         type: 'movie'
       },
       {
         id: '3',
         title: 'KGF Chapter 2',
-        imageUrl: 'https://images.unsplash.com/photo-1478720568477-b956dc04de23?w=300&h=400&fit=crop',
-        duration: '2h 48m', 
+        imageUrl: 'https://image.tmdb.org/t/p/w300/lP5eKh8WOcPysfELrUpGhHJGZEH.jpg',
+        duration: '2h 48m',
         rating: 4.3,
-        language: 'kn',
+        year: 2022,
+        language: 'Kannada',
+        genre: ['Action', 'Crime'],
         isPremium: true,
         type: 'movie'
       },
       {
         id: '4',
         title: 'Pathaan',
-        imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+        imageUrl: 'https://image.tmdb.org/t/p/w300/kqjL17yufvn9OVLyXYpvtyrFfak.jpg',
         duration: '2h 26m',
         rating: 4.1,
-        language: 'hi',
+        year: 2023,
+        language: 'Hindi',
+        genre: ['Action', 'Thriller'],
         isPremium: true,
         type: 'movie'
       },
       {
         id: '5',
         title: 'Vikram',
-        imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+        imageUrl: 'https://image.tmdb.org/t/p/w300/YCLV8b2zIiOJYAd6Zl3DYfD6lS.jpg',
         duration: '2h 53m',
         rating: 4.4,
-        language: 'ta', 
+        year: 2022,
+        language: 'Tamil',
+        genre: ['Action', 'Thriller'],
         isPremium: false,
         type: 'movie'
       },
       {
         id: '6',
         title: 'Jawan',
-        imageUrl: 'https://images.unsplash.com/photo-1489599328109-2af2c85020e4?w=300&h=400&fit=crop',
+        imageUrl: 'https://image.tmdb.org/t/p/w300/5ScPNT6fHtfYJeWBajZciPV3hEL.jpg',
         duration: '2h 49m',
         rating: 4.2,
-        language: 'hi',
+        year: 2023,
+        language: 'Hindi',
+        genre: ['Action', 'Thriller'],
         isPremium: true,
         type: 'movie'
       }
@@ -378,7 +391,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   // Event handlers
   const handleItemPlay = (item: any) => {
     console.log('Play item:', item);
-    
+
     // Ensure proper ID format for navigation
     const movieId = item.id.toString().replace('tv_', '');
     navigate(`/movie/${movieId}`);
@@ -386,16 +399,30 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
 
   const handleItemWatchlist = (item: any) => {
     console.log('Add to watchlist:', item);
-    
-    // Add XP for engagement
-    const xpAmount = 5;
-    setUserXP(prev => prev + xpAmount);
-    setShowXPNotification({
-      show: true,
-      amount: xpAmount,
-      reason: 'Added to watchlist',
-      type: 'engagement'
-    });
+
+    // Convert item to watchlist format and add
+    const watchlistItem = watchlistService.convertToWatchlistItem(item);
+    const success = watchlistService.addToWatchlist(watchlistItem);
+
+    if (success) {
+      // Add XP for engagement
+      const xpAmount = 5;
+      setUserXP(prev => prev + xpAmount);
+      setShowXPNotification({
+        show: true,
+        amount: xpAmount,
+        reason: 'Added to watchlist',
+        type: 'engagement'
+      });
+    } else {
+      // Item already in watchlist
+      setShowXPNotification({
+        show: true,
+        amount: 0,
+        reason: 'Already in watchlist',
+        type: 'engagement'
+      });
+    }
   };
 
   const handleSeeAll = (section: string) => {
@@ -437,17 +464,17 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Button 
-                size="icon" 
-                variant="ghost" 
+              <Button
+                size="icon"
+                variant="ghost"
                 className="text-muted-foreground"
                 onClick={() => navigate('/search')}
               >
                 <Search className="w-5 h-5" />
               </Button>
-              <Button 
-                size="icon" 
-                variant="ghost" 
+              <Button
+                size="icon"
+                variant="ghost"
                 className="text-muted-foreground hover:text-red-500 transition-colors"
                 onClick={() => {
                   console.log('My List button clicked');
@@ -457,9 +484,9 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               >
                 <Bookmark className="w-5 h-5" />
               </Button>
-              <Button 
-                size="icon" 
-                variant="ghost" 
+              <Button
+                size="icon"
+                variant="ghost"
                 className="text-muted-foreground relative"
                 onClick={onNavigateToProfile}
               >
@@ -508,15 +535,15 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         <ContentSection
           title="Popular Near You 📍"
           subtitle="Trending in your area"
-          items={trendingContent.length > 6 
+          items={trendingContent.length > 6
             ? trendingContent.slice(6, 12).map(movie => ({
-                ...movie,
-                viewCount: `${Math.floor(1 + Math.random() * 5)}k`
-              }))
+              ...movie,
+              viewCount: `${Math.floor(1 + Math.random() * 5)}k`
+            }))
             : getFallbackContent(6).map(movie => ({
-                ...movie,
-                viewCount: `${Math.floor(1 + Math.random() * 5)}k`
-              }))
+              ...movie,
+              viewCount: `${Math.floor(1 + Math.random() * 5)}k`
+            }))
           }
           icon={<MapPin className="w-5 h-5 text-blue-500" />}
           onItemPlay={handleItemPlay}
@@ -530,7 +557,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           const movies = moviesByLanguage[language] || [];
           const tvShows = tvShowsByLanguage[language] || [];
           const fallback = getFallbackContent(6);
-          
+
           return (
             <div key={language}>
               {/* Movies in this language */}
@@ -544,7 +571,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
                   onSeeAll={() => handleSeeAll(`${languageName} Movies`)}
                 />
               )}
-              
+
               {/* TV Shows in this language */}
               {(userPreferences.contentTypes.includes('tv_shows') || userPreferences.contentTypes.includes('series')) && (
                 <ContentSection
@@ -620,9 +647,9 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           <div className="px-4 py-4 border-t mt-8">
             <h3 className="text-sm font-medium mb-3">Development Tools</h3>
             <div className="space-y-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={async () => {
                   console.log('🧪 Testing TMDB API manually...');
                   setApiStatus('testing');
@@ -640,16 +667,16 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               >
                 🧪 Test TMDB API
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={async () => {
                   console.log('🔧 Running network diagnostics...');
                   const networkOK = await runNetworkDiagnostics();
                   if (networkOK) {
                     alert('✅ Network diagnostics passed!\n\nTrying to reload content...');
                     setLoading(true);
-                    setUserPreferences({...userPreferences});
+                    setUserPreferences({ ...userPreferences });
                   } else {
                     alert('❌ Network issues detected!\n\nCheck your internet connection or firewall settings.');
                   }
@@ -658,9 +685,9 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
                 🔧 Network Test
               </Button>
               {isRegionallyBlocked && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => {
                     alert('🌐 Content Access Info\n\nFor the latest releases and live content:\n\n• Use a VPN service for global access\n• Try a different network connection\n• Check back later for updates\n\nCurrently showing our curated collection.');
                   }}
@@ -668,21 +695,21 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
                   🌐 Access Info
                 </Button>
               )}
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   console.log('🔄 Retrying content fetch...');
                   setLoading(true);
                   // Trigger a re-fetch by updating a dependency
-                  setUserPreferences({...userPreferences});
+                  setUserPreferences({ ...userPreferences });
                 }}
               >
                 🔄 Retry API Calls
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => {
                   localStorage.clear();
                   window.location.reload();
@@ -698,17 +725,16 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         {import.meta.env.DEV && (
           <div className="fixed bottom-4 right-4 bg-black/80 text-white p-3 rounded-lg text-xs z-50 max-w-xs">
             <div className="flex items-center space-x-2 mb-2">
-              <div className={`w-2 h-2 rounded-full ${
-                apiStatus === 'connected' ? 'bg-green-500' : 
+              <div className={`w-2 h-2 rounded-full ${apiStatus === 'connected' ? 'bg-green-500' :
                 apiStatus === 'blocked' ? 'bg-orange-500' :
-                apiStatus === 'fallback' ? 'bg-yellow-500' : 
-                apiStatus === 'testing' ? 'bg-blue-500' : 'bg-red-500'
-              }`} />
+                  apiStatus === 'fallback' ? 'bg-yellow-500' :
+                    apiStatus === 'testing' ? 'bg-blue-500' : 'bg-red-500'
+                }`} />
               <span className="font-medium">
                 {apiStatus === 'connected' ? 'API Connected' :
-                 apiStatus === 'blocked' ? 'Regional Blocking' :
-                 apiStatus === 'fallback' ? 'Using Fallback Data' :
-                 apiStatus === 'testing' ? 'Testing API...' : 'API Error'}
+                  apiStatus === 'blocked' ? 'Regional Blocking' :
+                    apiStatus === 'fallback' ? 'Using Fallback Data' :
+                      apiStatus === 'testing' ? 'Testing API...' : 'API Error'}
               </span>
             </div>
             <div className="space-y-1 text-xs opacity-75">

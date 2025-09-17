@@ -1,9 +1,11 @@
-import React from 'react';
-import { Play, Clock, Star, Heart, MoreHorizontal } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Clock, Star, Heart, MoreHorizontal, Check } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import watchlistService from '@/services/watchlist';
 
 interface ContentCardProps {
+  id?: string;
   title: string;
   imageUrl?: string;
   duration?: string;
@@ -21,6 +23,7 @@ interface ContentCardProps {
 }
 
 const ContentCard: React.FC<ContentCardProps> = ({
+  id,
   title,
   imageUrl,
   duration,
@@ -36,6 +39,24 @@ const ContentCard: React.FC<ContentCardProps> = ({
   onPlay,
   onAddToWatchlist
 }) => {
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+
+  // Check if item is in watchlist
+  useEffect(() => {
+    if (id) {
+      setIsInWatchlist(watchlistService.isInWatchlist(id));
+    }
+  }, [id]);
+
+  const handleWatchlistClick = () => {
+    if (onAddToWatchlist) {
+      onAddToWatchlist();
+      // Update local state
+      if (id) {
+        setIsInWatchlist(watchlistService.isInWatchlist(id));
+      }
+    }
+  };
   const getSizeClasses = () => {
     switch (size) {
       case 'small':
@@ -142,13 +163,21 @@ const ContentCard: React.FC<ContentCardProps> = ({
             <Button
               size="icon"
               variant="ghost"
-              className="h-6 w-6 text-white/80 hover:text-white hover:bg-white/20"
+              className={`h-6 w-6 hover:bg-white/20 ${
+                isInWatchlist 
+                  ? 'text-red-500 hover:text-red-400' 
+                  : 'text-white/80 hover:text-white'
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
-                onAddToWatchlist();
+                handleWatchlistClick();
               }}
             >
-              <Heart className="w-3 h-3" />
+              {isInWatchlist ? (
+                <Heart className="w-3 h-3 fill-current" />
+              ) : (
+                <Heart className="w-3 h-3" />
+              )}
             </Button>
           )}
         </div>

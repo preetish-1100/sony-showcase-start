@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import tmdbService, { TMDBMovieDetails } from '@/services/tmdb';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import PremiumUnlockModal from '@/components/gamification/PremiumUnlockModal';
+import watchlistService from '@/services/watchlist';
 
 interface MovieDetails {
   id: string;
@@ -239,8 +240,10 @@ const MovieDescription: React.FC = () => {
 
   // Initialize watchlist status
   useEffect(() => {
-    setIsInWatchlist(isFromMyList);
-  }, [isFromMyList]);
+    if (id) {
+      setIsInWatchlist(watchlistService.isInWatchlist(id));
+    }
+  }, [id]);
 
   const handlePlay = () => {
     console.log('Playing movie:', movieData?.title);
@@ -274,8 +277,37 @@ const MovieDescription: React.FC = () => {
   };
 
   const handleAddToWatchlist = () => {
-    setIsInWatchlist(!isInWatchlist);
-    console.log(isInWatchlist ? 'Removed from watchlist:' : 'Added to watchlist:', movieData?.title);
+    if (!movieData) return;
+
+    if (isInWatchlist) {
+      // Remove from watchlist
+      const success = watchlistService.removeFromWatchlist(movieData.id);
+      if (success) {
+        setIsInWatchlist(false);
+        console.log('Removed from watchlist:', movieData.title);
+      }
+    } else {
+      // Add to watchlist
+      const watchlistItem = watchlistService.convertToWatchlistItem({
+        id: movieData.id,
+        title: movieData.title,
+        imageUrl: movieData.imageUrl,
+        duration: movieData.duration,
+        rating: movieData.rating,
+        year: movieData.year,
+        language: movieData.language,
+        genre: movieData.genre,
+        isPremium: movieData.isPremium,
+        type: 'movie',
+        description: movieData.description
+      });
+      
+      const success = watchlistService.addToWatchlist(watchlistItem);
+      if (success) {
+        setIsInWatchlist(true);
+        console.log('Added to watchlist:', movieData.title);
+      }
+    }
   };
 
   const canUnlockWithXP = movieData ? userXP >= movieData.xpRequired : false;
