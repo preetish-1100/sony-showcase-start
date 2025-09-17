@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import xpService from '@/services/xp';
 
 interface XPTransaction {
   id: string;
@@ -27,9 +28,25 @@ const XPDashboard: React.FC = () => {
     current: 'Silver Viewer',
     currentXP: 740,
     nextLevelXP: 1000,
-    totalXP: 1240,
+    totalXP: xpService.getCurrentXP(),
     multiplier: 1.15
   });
+
+  // Update XP in real-time
+  useEffect(() => {
+    const updateXP = () => {
+      const currentXP = xpService.getCurrentXP();
+      setUserLevel(prev => ({
+        ...prev,
+        totalXP: currentXP,
+        currentXP: currentXP % 1000 // Assuming 1000 XP per level
+      }));
+    };
+
+    updateXP();
+    const interval = setInterval(updateXP, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [xpHistory, setXpHistory] = useState<XPTransaction[]>([
     {

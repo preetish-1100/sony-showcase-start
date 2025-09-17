@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Clock, Star, Heart, MoreHorizontal, Check } from 'lucide-react';
+import { Play, Clock, Star, Heart, MoreHorizontal, Check, Crown } from 'lucide-react';
+import { Play, Clock, Star, Heart, MoreHorizontal, Check, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import watchlistService from '@/services/watchlist';
@@ -93,8 +94,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
 
       {/* Premium Badge */}
       {isPremium && (
-        <div className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs px-2 py-1 rounded-full flex items-center border-2 border-yellow-300">
-          <Star className="w-3 h-3 mr-1 fill-current" />
+        <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs px-3 py-1 rounded-full flex items-center shadow-lg border border-yellow-400">
+          <Crown className="w-3 h-3 mr-1 fill-current" />
           Premium
         </div>
       )}

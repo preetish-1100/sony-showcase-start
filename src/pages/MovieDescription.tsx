@@ -9,6 +9,8 @@ import tmdbService, { TMDBMovieDetails } from '@/services/tmdb';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import PremiumUnlockModal from '@/components/gamification/PremiumUnlockModal';
 import watchlistService from '@/services/watchlist';
+import xpService from '@/services/xp';
+import premiumUnlockService from '@/services/premiumUnlock';
 
 interface MovieDetails {
   id: string;
@@ -32,7 +34,7 @@ const MovieDescription: React.FC = () => {
   const { id } = useParams();
   const location = useLocation();
   const [isInWatchlist, setIsInWatchlist] = useState(false);
-  const [userXP, setUserXP] = useState(1250); // Mock user XP
+  const [userXP, setUserXP] = useState(xpService.getCurrentXP());
   const [movieData, setMovieData] = useState<MovieDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -262,12 +264,30 @@ const MovieDescription: React.FC = () => {
   }, [id]);
 
   const handlePlay = () => {
-    console.log('Playing movie:', movieData?.title);
+    console.log('🎬 Playing movie:', movieData?.title);
     
-    // Check if it's premium content and user doesn't have enough XP
-    if (movieData?.isPremium && movieData.xpRequired > 0 && userXP < movieData.xpRequired) {
+    if (!movieData) return;
+    
+    // Check if it's premium content
+    if (movieData.isPremium) {
+      // Check if already unlocked
+      if (premiumUnlockService.isContentUnlocked(movieData.id)) {
+        console.log('✅ Premium content is unlocked, starting playback');
+        setShowVideoPlayer(true);
+        return;
+      }
+      
+      // Check if user has enough XP to unlock
+      if (movieData.xpRequired > 0 && !xpService.hasEnoughXP(movieData.xpRequired)) {
+        console.log('❌ Insufficient XP for premium content');
+        alert(`❌ You need ${movieData.xpRequired} XP to unlock this premium content. You currently have ${xpService.getCurrentXP()} XP. Earn more XP by watching free content!`);
+        return;
+      }
+      
+      // Show unlock modal
       setShowPremiumUnlock(true);
     } else {
+      // Free content, play directly
       setShowVideoPlayer(true);
     }
   };
@@ -278,11 +298,17 @@ const MovieDescription: React.FC = () => {
   };
 
   const handleUnlockWithXP = () => {
-    if (movieData && userXP >= movieData.xpRequired) {
-      setUserXP(prev => prev - movieData.xpRequired);
-      setShowPremiumUnlock(false);
-      setShowVideoPlayer(true);
-      console.log(`Unlocked ${movieData.title} with ${movieData.xpRequired} XP`);
+    if (movieData && xpService.hasEnoughXP(movieData.xpRequired)) {
+      const success = xpService.spendXP(movieData.xpRequired, `Unlocked ${movieData.title}`);
+      if (success) {
+        // Unlock the content
+        premiumUnlockService.unlockContent(movieData.id, movieData.xpRequired);
+        
+        setUserXP(xpService.getCurrentXP());
+        setShowPremiumUnlock(false);
+        setShowVideoPlayer(true);
+        console.log(`✅ Unlocked ${movieData.title} with ${movieData.xpRequired} XP`);
+      }
     }
   };
 
@@ -326,7 +352,7 @@ const MovieDescription: React.FC = () => {
     }
   };
 
-  const canUnlockWithXP = movieData ? userXP >= movieData.xpRequired : false;
+  const canUnlockWithXP = movieData ? xpService.hasEnoughXP(movieData.xpRequired) : false;
 
   if (loading) {
     return (
@@ -379,11 +405,23 @@ const MovieDescription: React.FC = () => {
           <div className="absolute inset-0 flex items-center justify-center">
             <Button 
               size="lg" 
-              className="bg-white/90 text-black hover:bg-white"
+              className={movieData.isPremium 
+                ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600" 
+                : "bg-white/90 text-black hover:bg-white"
+              }
               onClick={handlePlay}
             >
-              <Play className="w-6 h-6 mr-2" />
-              Play Now
+              {movieData.isPremium ? (
+                <>
+                  <Crown className="w-6 h-6 mr-2" />
+                  Watch Premium
+                </>
+              ) : (
+                <>
+                  <Play className="w-6 h-6 mr-2" />
+                  Play Now
+                </>
+              )}
             </Button>
           </div>
 
@@ -475,12 +513,24 @@ const MovieDescription: React.FC = () => {
           {/* Action Buttons */}
           <div className="space-y-3">
             <Button 
-              className="w-full" 
+              className={`w-full ${movieData.isPremium 
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800' 
+                : 'bg-primary hover:bg-primary/90'
+              }`}
               size="lg"
               onClick={handlePlay}
             >
-              <Play className="w-5 h-5 mr-2" />
-              {movieData.isPremium ? 'Watch Premium' : 'Watch Now'}
+              {movieData.isPremium ? (
+                <>
+                  <Play className="w-5 h-5 mr-2" />
+                  Watch Premium
+                </>
+              ) : (
+                <>
+                  <Play className="w-5 h-5 mr-2" />
+                  Watch Now
+                </>
+              )}
             </Button>
 
             {movieData.isPremium && (
@@ -494,14 +544,17 @@ const MovieDescription: React.FC = () => {
                     <span className="text-sm font-medium">{userXP} XP available</span>
                   </div>
                   <Progress 
-                    value={(userXP / movieData.xpRequired) * 100} 
+                    value={xpService.getXPProgress(movieData.xpRequired)} 
                     className="w-full h-2"
                   />
                 </div>
                 
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  className={`w-full ${canUnlockWithXP 
+                    ? 'border-yellow-500 text-yellow-600 hover:bg-yellow-50' 
+                    : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                  }`}
                   onClick={handleUnlockWithXP}
                   disabled={!canUnlockWithXP}
                 >

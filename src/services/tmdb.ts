@@ -513,6 +513,7 @@ class TMDBService {
 
   // Convert TMDB movie to our format
   convertToContentItem(movie: TMDBMovie): any {
+    const isPremium = Math.random() > 0.6; // 40% chance for premium content
     return {
       id: movie.id.toString(),
       title: movie.title,
@@ -522,7 +523,8 @@ class TMDBService {
       year: new Date(movie.release_date).getFullYear(),
       language: movie.original_language,
       type: 'movie',
-      isPremium: Math.random() > 0.7, // Randomly assign premium status
+      isPremium: isPremium,
+      xpRequired: isPremium ? Math.floor(Math.random() * 1500) + 500 : 0, // 500-2000 XP for premium content
       description: movie.overview,
       genres: movie.genre_ids || []
     };
@@ -530,6 +532,7 @@ class TMDBService {
 
   // Convert TMDB TV show to our format
   convertTVShowToContentItem(tvShow: TMDBTVShow): any {
+    const isPremium = Math.random() > 0.5; // 50% chance for premium TV shows
     return {
       id: `tv_${tvShow.id}`,
       title: tvShow.name,
@@ -539,7 +542,8 @@ class TMDBService {
       year: new Date(tvShow.first_air_date).getFullYear(),
       language: tvShow.original_language,
       type: 'series',
-      isPremium: Math.random() > 0.7, // Randomly assign premium status
+      isPremium: isPremium,
+      xpRequired: isPremium ? Math.floor(Math.random() * 1200) + 800 : 0, // 800-2000 XP for premium TV shows
       description: tvShow.overview,
       genres: tvShow.genre_ids || []
     };

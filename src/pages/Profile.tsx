@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Settings, Crown, Trophy, Target, Star, LogOut, Bell, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import XPDashboard from '@/components/gamification/XPDashboard';
 import AchievementSystem from '@/components/gamification/AchievementSystem';
 import PremiumUnlockSystem from '@/components/gamification/PremiumUnlockSystem';
+import xpService from '@/services/xp';
 
 interface ProfileProps {
   userPreferences: {
@@ -21,12 +22,29 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ userPreferences, onSignOut }) => {
-  const [userXP, setUserXP] = useState(1240);
+  const [userXP, setUserXP] = useState(xpService.getCurrentXP());
   const [activeTab, setActiveTab] = useState('xp');
 
+  // Update XP in real-time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentXP = xpService.getCurrentXP();
+      if (currentXP !== userXP) {
+        setUserXP(currentXP);
+      }
+    }, 1000); // Check every second for XP updates
+
+    return () => clearInterval(interval);
+  }, [userXP]);
+
   const handleXPUnlock = (contentId: string, xpCost: number) => {
-    setUserXP(prev => prev - xpCost);
-    console.log(`Unlocked content ${contentId} for ${xpCost} XP`);
+    const success = xpService.spendXP(xpCost, `Unlocked content: ${contentId}`);
+    if (success) {
+      setUserXP(xpService.getCurrentXP());
+      console.log(`✅ Unlocked content ${contentId} for ${xpCost} XP`);
+      return true;
+    }
+    return false;
   };
 
   const handleSignOut = () => {

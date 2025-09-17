@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Crown, Star, Zap, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Crown, Star, Zap, Clock, CheckCircle2, XCircle, Play } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
+import xpService from '@/services/xp';
+import premiumUnlockService from '@/services/premiumUnlock';
 
 interface PremiumContent {
   id: string;
@@ -22,66 +25,87 @@ interface PremiumContent {
 
 interface PremiumUnlockSystemProps {
   userXP: number;
-  onUnlock: (contentId: string, xpCost: number) => void;
+  onUnlock: (contentId: string, xpCost: number) => boolean;
 }
 
 const PremiumUnlockSystem: React.FC<PremiumUnlockSystemProps> = ({
   userXP,
   onUnlock
 }) => {
+  const navigate = useNavigate();
   const [selectedContent, setSelectedContent] = useState<PremiumContent | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [unlockedContent, setUnlockedContent] = useState<Set<string>>(new Set());
+  const [currentUserXP, setCurrentUserXP] = useState(userXP);
+
+  // Update XP in real-time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newXP = xpService.getCurrentXP();
+      if (newXP !== currentUserXP) {
+        setCurrentUserXP(newXP);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentUserXP]);
+
+  // Load unlocked content from service
+  useEffect(() => {
+    const unlockedIds = premiumUnlockService.getUnlockedContentIds();
+    setUnlockedContent(new Set(unlockedIds));
+  }, []);
 
   const favoriteContent: PremiumContent[] = [
     {
-      id: '1',
+      id: '2',
       title: 'Pushpa: The Rise',
-      imageUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=400&fit=crop',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/dBLBDeyrGMzMtlhayZ3VrxZVcyg.jpg',
       year: 2021,
       rating: 4.5,
       duration: '2h 59m',
       xpCost: 200,
-      userXP,
-      canUnlock: userXP >= 200,
-      isUnlocked: false
+      userXP: currentUserXP,
+      canUnlock: currentUserXP >= 200,
+      isUnlocked: unlockedContent.has('2')
     },
     {
-      id: '2',
+      id: 'tv_family_man',
       title: 'The Family Man S2',
-      imageUrl: 'https://images.unsplash.com/photo-1509347528160-9329d33b280f?w=300&h=400&fit=crop',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/dqB6DodeNVaXB1PBGl8XYuKGRhc.jpg',
       year: 2021,
       rating: 4.8,
       duration: '8 episodes',
       xpCost: 300,
-      userXP,
-      canUnlock: userXP >= 300,
-      isUnlocked: true,
-      unlockExpiresAt: '6 days 23 hours remaining'
+      userXP: currentUserXP,
+      canUnlock: currentUserXP >= 300,
+      isUnlocked: unlockedContent.has('tv_family_man'),
+      unlockExpiresAt: unlockedContent.has('tv_family_man') ? premiumUnlockService.getTimeRemaining('tv_family_man') || undefined : undefined
     },
     {
-      id: '3',
+      id: 'tv_scam_1992',
       title: 'Scam 1992',
-      imageUrl: 'https://images.unsplash.com/photo-1518604666860-f6c8c9199b44?w=300&h=400&fit=crop',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/7VKwqzR0622LdYm0v2pzgP8dWAV.jpg',
       year: 2020,
       rating: 4.9,
       duration: '10 episodes',
       xpCost: 400,
-      userXP,
-      canUnlock: userXP >= 400,
-      isUnlocked: false
+      userXP: currentUserXP,
+      canUnlock: currentUserXP >= 400,
+      isUnlocked: unlockedContent.has('tv_scam_1992')
     },
     {
-      id: '4',
+      id: 'tv_mumbai_diaries',
       title: 'Mumbai Diaries 26/11',
-      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=300&h=400&fit=crop',
+      imageUrl: 'https://image.tmdb.org/t/p/w300/8XZWnTtKx8VV1fCFg8dY1vFJ9Hs.jpg',
       year: 2021,
       rating: 4.3,
       duration: '8 episodes',
       xpCost: 250,
-      userXP,
-      canUnlock: userXP >= 250,
-      isUnlocked: false
+      userXP: currentUserXP,
+      canUnlock: currentUserXP >= 250,
+      isUnlocked: unlockedContent.has('tv_mumbai_diaries')
     }
   ];
 
@@ -92,9 +116,39 @@ const PremiumUnlockSystem: React.FC<PremiumUnlockSystemProps> = ({
 
   const handleConfirmUnlock = () => {
     if (selectedContent) {
-      onUnlock(selectedContent.id, selectedContent.xpCost);
-      setShowConfirmDialog(false);
-      setShowSuccessDialog(true);
+      const success = onUnlock(selectedContent.id, selectedContent.xpCost);
+      if (success) {
+        // Unlock content using service
+        premiumUnlockService.unlockContent(selectedContent.id, selectedContent.xpCost);
+        
+        // Update local state
+        const newUnlocked = new Set(unlockedContent);
+        newUnlocked.add(selectedContent.id);
+        setUnlockedContent(newUnlocked);
+        
+        setShowConfirmDialog(false);
+        setShowSuccessDialog(true);
+      }
+    }
+  };
+
+  const handleWatchNow = (contentId: string) => {
+    console.log('🎬 Starting to watch:', contentId);
+    
+    // Check if content is unlocked using service
+    if (!premiumUnlockService.isContentUnlocked(contentId)) {
+      alert('❌ Content not unlocked or expired! Please unlock it first with XP.');
+      return;
+    }
+
+    // Navigate to movie/show page
+    navigate(`/movie/${contentId}`);
+  };
+
+  const handleStartWatching = () => {
+    if (selectedContent) {
+      setShowSuccessDialog(false);
+      handleWatchNow(selectedContent.id);
     }
   };
 
@@ -216,8 +270,11 @@ const PremiumUnlockSystem: React.FC<PremiumUnlockSystemProps> = ({
                   {/* Action Button */}
                   <div>
                     {content.isUnlocked ? (
-                      <Button className="w-full bg-green-600 hover:bg-green-700">
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                      <Button 
+                        onClick={() => handleWatchNow(content.id)}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
                         Watch Now
                       </Button>
                     ) : content.canUnlock ? (
@@ -326,9 +383,10 @@ const PremiumUnlockSystem: React.FC<PremiumUnlockSystemProps> = ({
             </div>
 
             <Button 
-              onClick={() => setShowSuccessDialog(false)}
+              onClick={handleStartWatching}
               className="w-full bg-green-600 hover:bg-green-700"
             >
+              <Play className="w-4 h-4 mr-2" />
               Start Watching Now
             </Button>
           </div>

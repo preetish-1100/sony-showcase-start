@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { User, Search, List, TrendingUp, Star, MapPin, Trophy, Crown, Zap, Heart, Bookmark } from 'lucide-react';
 import tmdbService, { TMDBMovie } from '@/services/tmdb';
 import watchlistService from '@/services/watchlist';
+import xpService from '@/services/xp';
 
 interface HomeProps {
   userPreferences: {
@@ -29,7 +30,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   const [currentlyWatching, setCurrentlyWatching] = useState<Set<string>>(new Set());
 
   // Gamification state
-  const [userXP, setUserXP] = useState(1240);
+  const [userXP, setUserXP] = useState(xpService.getCurrentXP());
   const [showXPNotification, setShowXPNotification] = useState<{
     show: boolean;
     amount: number;
@@ -323,6 +324,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         language: 'Telugu',
         genre: ['Action', 'Drama'],
         isPremium: false,
+        xpRequired: 0,
         type: 'movie'
       },
       {
@@ -334,7 +336,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         year: 2021,
         language: 'Telugu',
         genre: ['Action', 'Crime'],
-        isPremium: false,
+        isPremium: true,
+        xpRequired: 1200,
         type: 'movie'
       },
       {
@@ -347,6 +350,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         language: 'Kannada',
         genre: ['Action', 'Crime'],
         isPremium: true,
+        xpRequired: 1000,
         type: 'movie'
       },
       {
@@ -359,6 +363,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         language: 'Hindi',
         genre: ['Action', 'Thriller'],
         isPremium: true,
+        xpRequired: 1500,
         type: 'movie'
       },
       {
@@ -371,6 +376,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         language: 'Tamil',
         genre: ['Action', 'Thriller'],
         isPremium: false,
+        xpRequired: 0,
         type: 'movie'
       },
       {
@@ -383,6 +389,7 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         language: 'Hindi',
         genre: ['Action', 'Thriller'],
         isPremium: true,
+        xpRequired: 1800,
         type: 'movie'
       }
     ].slice(0, count);
@@ -423,8 +430,9 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
 
     if (success) {
       // Add XP for engagement
-      const xpAmount = 5;
-      setUserXP(prev => prev + xpAmount);
+      const xpAmount = xpService.XP_REWARDS.WATCHLIST_ADD;
+      const newXP = xpService.addXP(xpAmount, 'Added to watchlist');
+      setUserXP(newXP);
       setShowXPNotification({
         show: true,
         amount: xpAmount,
