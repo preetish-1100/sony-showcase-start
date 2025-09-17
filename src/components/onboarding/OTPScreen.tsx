@@ -57,11 +57,27 @@ const OTPScreen: React.FC<OTPScreenProps> = ({
   const handleVerify = async () => {
     if (otp.every(digit => digit !== '')) {
       setIsVerifying(true);
-      // Simulate verification delay
-      setTimeout(() => {
+      try {
+        // Simulate verification delay with proper error handling
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            // Simulate 90% success rate for demo
+            if (Math.random() > 0.1) {
+              resolve(true);
+            } else {
+              reject(new Error('Verification failed'));
+            }
+          }, 1500);
+        });
+        
         setIsVerifying(false);
         onNext();
-      }, 1500);
+      } catch (error) {
+        console.error('OTP verification failed:', error);
+        setIsVerifying(false);
+        // You could add error state here if needed
+        onNext(); // Still proceed for demo purposes
+      }
     }
   };
 

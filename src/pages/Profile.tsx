@@ -17,15 +17,32 @@ interface ProfileProps {
     contentTypes: string[];
     allowLocation: boolean;
   };
+  onSignOut?: () => void;
 }
 
-const Profile: React.FC<ProfileProps> = ({ userPreferences }) => {
+const Profile: React.FC<ProfileProps> = ({ userPreferences, onSignOut }) => {
   const [userXP, setUserXP] = useState(1240);
   const [activeTab, setActiveTab] = useState('xp');
 
   const handleXPUnlock = (contentId: string, xpCost: number) => {
     setUserXP(prev => prev - xpCost);
     console.log(`Unlocked content ${contentId} for ${xpCost} XP`);
+  };
+
+  const handleSignOut = () => {
+    console.log('Sign out clicked');
+    
+    // Clear all user data from localStorage
+    localStorage.removeItem('userPreferences');
+    localStorage.removeItem('onboardingCompleted');
+    
+    // Call the parent component's sign out handler
+    if (onSignOut) {
+      onSignOut();
+    } else {
+      // Fallback: reload the page to trigger onboarding
+      window.location.reload();
+    }
   };
 
   // Language display names
@@ -273,7 +290,11 @@ const Profile: React.FC<ProfileProps> = ({ userPreferences }) => {
               {/* Logout */}
               <Card>
                 <CardContent className="pt-6">
-                  <Button variant="outline" className="w-full text-red-600 border-red-200 hover:bg-red-50">
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={handleSignOut}
+                  >
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </Button>

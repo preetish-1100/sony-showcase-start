@@ -47,6 +47,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   };
 
   const handleOTPNext = () => {
+    console.log('OTP verification completed, proceeding to language selection');
     setCurrentStep('language');
   };
 
@@ -112,6 +113,24 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
   };
 
   const handleCompletionFinish = () => {
+    console.log('Onboarding completion triggered with preferences:', userPreferences);
+    
+    // Validate preferences before completing
+    if (!userPreferences.languages || userPreferences.languages.length === 0) {
+      console.error('Cannot complete onboarding: No languages selected');
+      return;
+    }
+    
+    if (!userPreferences.genres || userPreferences.genres.length === 0) {
+      console.error('Cannot complete onboarding: No genres selected');
+      return;
+    }
+    
+    if (!userPreferences.contentTypes || userPreferences.contentTypes.length === 0) {
+      console.error('Cannot complete onboarding: No content types selected');
+      return;
+    }
+    
     onComplete(userPreferences);
   };
 

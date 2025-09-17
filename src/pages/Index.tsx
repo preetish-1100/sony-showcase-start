@@ -30,69 +30,108 @@ const Index = () => {
 
   // Check localStorage for existing preferences on mount
   useEffect(() => {
-    addDebug('Index component mounted, checking localStorage...');
-    const savedPreferences = localStorage.getItem('userPreferences');
-    const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-    
-    addDebug(`Onboarding completed: ${onboardingCompleted}`);
-    addDebug(`Saved preferences: ${savedPreferences}`);
-    
-    // Check for force reset parameter (for testing)
-    const urlParams = new URLSearchParams(window.location.search);
-    const forceReset = urlParams.get('reset') === 'true';
-    const forceOnboarding = urlParams.get('onboarding') === 'true';
-    
-    if (forceReset || forceOnboarding) {
-      addDebug('Forcing onboarding reset...');
-      localStorage.removeItem('userPreferences');
-      localStorage.removeItem('onboardingCompleted');
-      setCurrentPage('onboarding');
-      return;
-    }
-    
-    // Check if user has completed onboarding with valid preferences
-    if (onboardingCompleted === 'true' && savedPreferences) {
-      try {
-        const preferences = JSON.parse(savedPreferences);
-        addDebug(`Parsed preferences: ${JSON.stringify(preferences)}`);
-        
-        // Strict validation - require at least one language and one genre
-        const hasValidPrefs = preferences.languages && 
-                             Array.isArray(preferences.languages) &&
-                             preferences.languages.length > 0 &&
-                             preferences.genres && 
-                             Array.isArray(preferences.genres) &&
-                             preferences.contentTypes &&
-                             Array.isArray(preferences.contentTypes);
-        
-        if (hasValidPrefs) {
-          addDebug('Valid complete preferences found, going to home');
-          setUserPreferences(preferences);
-          setCurrentPage('home');
-        } else {
-          addDebug('Incomplete preferences, forcing onboarding');
+    const initializeApp = async () => {
+      addDebug('Index component mounted, checking localStorage...');
+      
+      // Add a small delay to ensure localStorage is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const savedPreferences = localStorage.getItem('userPreferences');
+      const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+      
+      addDebug(`Onboarding completed: ${onboardingCompleted}`);
+      addDebug(`Saved preferences: ${savedPreferences}`);
+      
+      // Check for force reset parameter (for testing)
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceReset = urlParams.get('reset') === 'true';
+      const forceOnboarding = urlParams.get('onboarding') === 'true';
+      
+      if (forceReset || forceOnboarding) {
+        addDebug('Forcing onboarding reset...');
+        localStorage.removeItem('userPreferences');
+        localStorage.removeItem('onboardingCompleted');
+        setCurrentPage('onboarding');
+        return;
+      }
+      
+      // Check if user has completed onboarding with valid preferences
+      if (onboardingCompleted === 'true' && savedPreferences) {
+        try {
+          const preferences = JSON.parse(savedPreferences);
+          addDebug(`Parsed preferences: ${JSON.stringify(preferences)}`);
+          
+          // Strict validation - require at least one language and one genre
+          const hasValidPrefs = preferences.languages && 
+                               Array.isArray(preferences.languages) &&
+                               preferences.languages.length > 0 &&
+                               preferences.genres && 
+                               Array.isArray(preferences.genres) &&
+                               preferences.contentTypes &&
+                               Array.isArray(preferences.contentTypes);
+          
+          if (hasValidPrefs) {
+            addDebug('Valid complete preferences found, going to home');
+            setUserPreferences(preferences);
+            setCurrentPage('home');
+          } else {
+            addDebug('Incomplete preferences, forcing onboarding');
+            localStorage.removeItem('userPreferences');
+            localStorage.removeItem('onboardingCompleted');
+            setCurrentPage('onboarding');
+          }
+        } catch (error) {
+          addDebug(`Error parsing saved preferences: ${error}`);
           localStorage.removeItem('userPreferences');
           localStorage.removeItem('onboardingCompleted');
           setCurrentPage('onboarding');
         }
-      } catch (error) {
-        addDebug(`Error parsing saved preferences: ${error}`);
-        localStorage.removeItem('userPreferences');
-        localStorage.removeItem('onboardingCompleted');
+      } else {
+        addDebug('No valid onboarding found, showing onboarding...');
         setCurrentPage('onboarding');
       }
-    } else {
-      addDebug('No valid onboarding found, showing onboarding...');
-      setCurrentPage('onboarding');
-    }
+    };
+    
+    initializeApp();
   }, []);
 
   const handleOnboardingComplete = (preferences: UserPreferences) => {
-    setUserPreferences(preferences);
-    // Save to localStorage
-    localStorage.setItem('userPreferences', JSON.stringify(preferences));
-    localStorage.setItem('onboardingCompleted', 'true');
-    setCurrentPage('home');
+    try {
+      addDebug('Onboarding completed, saving preferences...');
+      addDebug(`Preferences to save: ${JSON.stringify(preferences)}`);
+      
+      // Validate preferences before saving
+      if (!preferences.languages || !Array.isArray(preferences.languages) || preferences.languages.length === 0) {
+        addDebug('ERROR: Invalid languages in preferences');
+        return;
+      }
+      
+      if (!preferences.genres || !Array.isArray(preferences.genres)) {
+        addDebug('ERROR: Invalid genres in preferences');
+        return;
+      }
+      
+      if (!preferences.contentTypes || !Array.isArray(preferences.contentTypes)) {
+        addDebug('ERROR: Invalid contentTypes in preferences');
+        return;
+      }
+      
+      // Save to localStorage with error handling
+      try {
+        localStorage.setItem('userPreferences', JSON.stringify(preferences));
+        localStorage.setItem('onboardingCompleted', 'true');
+        addDebug('Preferences saved successfully');
+      } catch (storageError) {
+        addDebug(`ERROR: Failed to save to localStorage: ${storageError}`);
+        // Still proceed with state update
+      }
+      
+      setUserPreferences(preferences);
+      setCurrentPage('home');
+    } catch (error) {
+      addDebug(`ERROR: Failed to complete onboarding: ${error}`);
+      console.error('Onboarding completion error:', error);
+    }
   };
 
   // Debug panel for development
@@ -178,7 +217,21 @@ const Index = () => {
       )}
       {currentPage === 'profile' && (
         <div>
-          <Profile userPreferences={userPreferences} />
+          <Profile 
+            userPreferences={userPreferences} 
+            onSignOut={() => {
+              addDebug('Sign out triggered, clearing data and going to onboarding');
+              localStorage.removeItem('userPreferences');
+              localStorage.removeItem('onboardingCompleted');
+              setUserPreferences({
+                languages: [],
+                genres: [],
+                contentTypes: [],
+                allowLocation: false,
+              });
+              setCurrentPage('onboarding');
+            }}
+          />
           {/* Bottom Navigation */}
           <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-50">
             <div className="max-w-md mx-auto flex justify-around py-3">

@@ -47,6 +47,18 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   const [trendingContent, setTrendingContent] = useState<any[]>([]);
   const [premiumContent, setPremiumContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [apiStatus, setApiStatus] = useState<'testing' | 'connected' | 'fallback' | 'error'>('testing');
+
+  // Debug logging for content state
+  useEffect(() => {
+    console.log('Content state updated:');
+    console.log('- Hero content:', heroContent.length);
+    console.log('- Trending content:', trendingContent.length);
+    console.log('- Movies by language:', Object.keys(moviesByLanguage).length);
+    console.log('- TV shows by language:', Object.keys(tvShowsByLanguage).length);
+    console.log('- Sports content:', sportsContent.length);
+    console.log('- Premium content:', premiumContent.length);
+  }, [heroContent, trendingContent, moviesByLanguage, tvShowsByLanguage, sportsContent, premiumContent]);
 
   // Language display names
   const getLanguageDisplayName = (languageCode: string) => {
@@ -65,12 +77,70 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     return languageNames[languageCode] || languageCode;
   };
 
+  // Test TMDB API connection with detailed diagnostics
+  const testTMDBConnection = async () => {
+    try {
+      console.log('🔍 Testing TMDB API connection...');
+      const isConnected = await tmdbService.testConnection();
+      console.log('🔍 TMDB API connection test result:', isConnected);
+      return isConnected;
+    } catch (error) {
+      console.error('❌ TMDB API test failed:', error);
+      return false;
+    }
+  };
+
+  // Network diagnostics
+  const runNetworkDiagnostics = async () => {
+    console.log('🔧 Running network diagnostics...');
+    
+    // Test 1: Basic connectivity
+    try {
+      const response = await fetch('https://httpbin.org/get', { 
+        method: 'GET',
+        signal: AbortSignal.timeout(10000)
+      });
+      console.log('✅ Basic internet connectivity: OK');
+    } catch (error) {
+      console.error('❌ Basic internet connectivity: FAILED', error);
+      return false;
+    }
+
+    // Test 2: TMDB domain resolution
+    try {
+      const response = await fetch('https://api.themoviedb.org', { 
+        method: 'HEAD',
+        signal: AbortSignal.timeout(15000)
+      });
+      console.log('✅ TMDB domain resolution: OK');
+    } catch (error) {
+      console.error('❌ TMDB domain resolution: FAILED', error);
+      return false;
+    }
+
+    return true;
+  };
+
   // Fetch content based on user preferences
   useEffect(() => {
     const fetchContentByPreferences = async () => {
       try {
         setLoading(true);
         console.log('User preferences:', userPreferences);
+        
+        // Test API connection first - but proceed regardless
+        console.log('🚀 Starting content fetch with user preferences:', userPreferences);
+        setApiStatus('testing');
+        
+        const isAPIConnected = await testTMDBConnection();
+        console.log('🔍 Initial API Connection Status:', isAPIConnected);
+        
+        if (isAPIConnected) {
+          setApiStatus('connected');
+          console.log('✅ TMDB API is working, fetching live data');
+        } else {
+          console.warn('⚠️ Initial API test failed, but will still attempt API calls with aggressive retry');
+        }
         
         // Reset all content state
         setHeroContent([]);
@@ -84,21 +154,36 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         const primaryContentType = userPreferences.contentTypes[0] || 'movies';
         let heroData = [];
         
-        if (primaryContentType === 'sports') {
-          const sports = await tmdbService.getSportsContent();
-          heroData = sports.results.slice(0, 5).map(movie => ({
-            ...tmdbService.convertToContentItem(movie),
-            isLive: Math.random() > 0.7
-          }));
-        } else if (primaryContentType === 'tv_shows' || primaryContentType === 'series') {
-          const trending = await tmdbService.getTrendingTVShows();
-          heroData = trending.results.slice(0, 5).map(show => tmdbService.convertTVShowToContentItem(show));
-        } else {
-          // Default to movies
-          const trending = await tmdbService.getTrendingMovies();
-          heroData = trending.results.slice(0, 5).map(movie => tmdbService.convertToContentItem(movie));
+        try {
+          if (primaryContentType === 'sports') {
+            console.log('🏈 Fetching sports content for hero banner...');
+            const sports = await tmdbService.getSportsContent();
+            heroData = sports.results.slice(0, 5).map(movie => ({
+              ...tmdbService.convertToContentItem(movie),
+              isLive: Math.random() > 0.7
+            }));
+            console.log(`✅ Got ${heroData.length} sports items for hero`);
+          } else if (primaryContentType === 'tv_shows' || primaryContentType === 'series') {
+            console.log('📺 Fetching trending TV shows for hero banner...');
+            const trending = await tmdbService.getTrendingTVShows();
+            heroData = trending.results.slice(0, 5).map(show => tmdbService.convertTVShowToContentItem(show));
+            console.log(`✅ Got ${heroData.length} TV shows for hero`);
+          } else {
+            console.log('🎬 Fetching trending movies for hero banner...');
+            const trending = await tmdbService.getTrendingMovies();
+            heroData = trending.results.slice(0, 5).map(movie => tmdbService.convertToContentItem(movie));
+            console.log(`✅ Got ${heroData.length} movies for hero`);
+          }
+          
+          setHeroContent(heroData);
+          setApiStatus('connected');
+        } catch (error) {
+          console.error('❌ Failed to fetch hero content from API:', error);
+          console.log('🔄 Using fallback content for hero banner');
+          heroData = getFallbackContent(5);
+          setHeroContent(heroData);
+          setApiStatus('fallback');
         }
-        setHeroContent(heroData);
         
         // 2. Fetch content for each selected language
         const moviesByLangTemp: { [key: string]: any[] } = {};
@@ -110,30 +195,28 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           // Fetch movies for this language with user's preferred genres
           if (userPreferences.contentTypes.includes('movies')) {
             try {
-              const movies = await tmdbService.getMoviesBySpecificLanguageAndGenre(
-                language, 
-                userPreferences.genres
-              );
+              console.log(`🎬 Fetching ${language} movies with genres:`, userPreferences.genres);
+              const movies = await tmdbService.getMoviesBySpecificLanguageAndGenre(language, userPreferences.genres);
               moviesByLangTemp[language] = movies.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
-              console.log(`Fetched ${moviesByLangTemp[language].length} movies for ${language}`);
+              console.log(`✅ Successfully fetched ${moviesByLangTemp[language].length} ${language} movies from API`);
             } catch (error) {
-              console.error(`Error fetching movies for ${language}:`, error);
-              moviesByLangTemp[language] = [];
+              console.error(`❌ Failed to fetch ${language} movies from API:`, error);
+              console.log(`🔄 Using fallback content for ${language} movies`);
+              moviesByLangTemp[language] = getFallbackContent(20);
             }
           }
           
           // Fetch TV shows for this language with user's preferred genres
           if (userPreferences.contentTypes.includes('tv_shows') || userPreferences.contentTypes.includes('series')) {
             try {
-              const tvShows = await tmdbService.getTVShowsBySpecificLanguageAndGenre(
-                language, 
-                userPreferences.genres
-              );
+              console.log(`📺 Fetching ${language} TV shows with genres:`, userPreferences.genres);
+              const tvShows = await tmdbService.getTVShowsBySpecificLanguageAndGenre(language, userPreferences.genres);
               tvShowsByLangTemp[language] = tvShows.results.slice(0, 20).map(show => tmdbService.convertTVShowToContentItem(show));
-              console.log(`Fetched ${tvShowsByLangTemp[language].length} TV shows for ${language}`);
+              console.log(`✅ Successfully fetched ${tvShowsByLangTemp[language].length} ${language} TV shows from API`);
             } catch (error) {
-              console.error(`Error fetching TV shows for ${language}:`, error);
-              tvShowsByLangTemp[language] = [];
+              console.error(`❌ Failed to fetch ${language} TV shows from API:`, error);
+              console.log(`🔄 Using fallback content for ${language} TV shows`);
+              tvShowsByLangTemp[language] = getFallbackContent(20).map(item => ({ ...item, type: 'series' }));
             }
           }
         }
@@ -143,29 +226,71 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         
         // 3. Fetch sports content if user selected sports
         if (userPreferences.contentTypes.includes('sports')) {
-          const sports = await tmdbService.getSportsContent();
-          const sportsFormatted = sports.results.slice(0, 20).map(movie => ({
-            ...tmdbService.convertToContentItem(movie),
-            isLive: Math.random() > 0.7,
-            type: 'sports'
-          }));
-          setSportsContent(sportsFormatted);
+          try {
+            console.log('🏈 Fetching sports content...');
+            const sports = await tmdbService.getSportsContent();
+            const sportsFormatted = sports.results.slice(0, 20).map(movie => ({
+              ...tmdbService.convertToContentItem(movie),
+              isLive: Math.random() > 0.7,
+              type: 'sports'
+            }));
+            setSportsContent(sportsFormatted);
+            console.log(`✅ Successfully fetched ${sportsFormatted.length} sports items from API`);
+          } catch (error) {
+            console.error('❌ Failed to fetch sports content from API:', error);
+            console.log('🔄 Using fallback content for sports');
+            const fallbackSports = getFallbackContent(20).map(movie => ({
+              ...movie,
+              isLive: Math.random() > 0.7,
+              type: 'sports'
+            }));
+            setSportsContent(fallbackSports);
+          }
         }
         
         // 4. Fetch general trending content
-        const trending = await tmdbService.getTrendingMovies();
-        const trendingFormatted = trending.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
-        setTrendingContent(trendingFormatted);
+        try {
+          console.log('🔥 Fetching trending movies...');
+          const trending = await tmdbService.getTrendingMovies();
+          const trendingFormatted = trending.results.slice(0, 20).map(movie => tmdbService.convertToContentItem(movie));
+          setTrendingContent(trendingFormatted);
+          console.log(`✅ Successfully fetched ${trendingFormatted.length} trending movies from API`);
+        } catch (error) {
+          console.error('❌ Failed to fetch trending content from API:', error);
+          console.log('🔄 Using fallback content for trending');
+          const fallbackTrending = getFallbackContent(20);
+          setTrendingContent(fallbackTrending);
+        }
         
         // 5. Fetch premium content
-        const popular = await tmdbService.getPopularMovies();
-        const premiumFormatted = popular.results.slice(0, 20).map(movie => ({
-          ...tmdbService.convertToContentItem(movie),
-          isPremium: true
-        }));
-        setPremiumContent(premiumFormatted);
+        try {
+          console.log('⭐ Fetching popular movies for premium content...');
+          const popular = await tmdbService.getPopularMovies();
+          const premiumFormatted = popular.results.slice(0, 20).map(movie => ({
+            ...tmdbService.convertToContentItem(movie),
+            isPremium: true
+          }));
+          setPremiumContent(premiumFormatted);
+          console.log(`✅ Successfully fetched ${premiumFormatted.length} premium movies from API`);
+        } catch (error) {
+          console.error('❌ Failed to fetch premium content from API:', error);
+          console.log('🔄 Using fallback content for premium');
+          const fallbackPremium = getFallbackContent(20).map(movie => ({
+            ...movie,
+            isPremium: true
+          }));
+          setPremiumContent(fallbackPremium);
+        }
         
         setLoading(false);
+        console.log('Content fetching completed');
+        
+        // Update API status based on content availability
+        if (trendingContent.length > 0 || heroContent.length > 0) {
+          setApiStatus('connected');
+        } else {
+          setApiStatus('fallback');
+        }
         
       } catch (error) {
         console.error('Error fetching content:', error);
@@ -174,7 +299,10 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
     };
 
     if (userPreferences.languages.length > 0 && userPreferences.contentTypes.length > 0) {
+      console.log('Starting content fetch with preferences:', userPreferences);
       fetchContentByPreferences();
+    } else {
+      console.log('Skipping content fetch - missing preferences:', userPreferences);
     }
   }, [userPreferences]);
 
@@ -461,6 +589,156 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading your personalized content...</p>
+              <p className="text-xs text-muted-foreground mt-2">Fetching movies and shows based on your preferences</p>
+              <div className="mt-4 text-xs text-muted-foreground">
+                <p>Languages: {userPreferences.languages.map(lang => getLanguageDisplayName(lang)).join(', ')}</p>
+                <p>Content Types: {userPreferences.contentTypes.join(', ')}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Show fallback content when no API data is available */}
+        {!loading && trendingContent.length === 0 && heroContent.length === 0 && (
+          <div className="px-4 py-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🎬</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Welcome to SonyLIV</h3>
+              <p className="text-gray-600 mb-4">We're setting up your personalized experience...</p>
+              <p className="text-sm text-gray-500">If this takes too long, try refreshing the page</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Always show some content even if API fails */}
+        {!loading && trendingContent.length === 0 && (
+          <ContentSection
+            title="Popular Movies 🎬"
+            subtitle="Discover amazing content"
+            items={getFallbackContent(6)}
+            onItemPlay={handleItemPlay}
+            onItemWatchlist={handleItemWatchlist}
+            onSeeAll={() => handleSeeAll('Popular Movies')}
+          />
+        )}
+
+        {/* Development Test Panel */}
+        {import.meta.env.DEV && (
+          <div className="px-4 py-4 border-t mt-8">
+            <h3 className="text-sm font-medium mb-3">Development Tools</h3>
+            <div className="space-y-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={async () => {
+                  console.log('🧪 Testing TMDB API manually...');
+                  setApiStatus('testing');
+                  try {
+                    const result = await tmdbService.getTrendingMovies();
+                    console.log('✅ Manual test result:', result);
+                    setApiStatus('connected');
+                    alert(`✅ API Test SUCCESS: ${result.results.length} movies found!\n\nFirst movie: "${result.results[0]?.title}"`);
+                  } catch (error: any) {
+                    console.error('❌ Manual test failed:', error);
+                    setApiStatus('error');
+                    alert(`❌ API Test FAILED: ${error.message}\n\nCheck console for details.`);
+                  }
+                }}
+              >
+                🧪 Test TMDB API
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={async () => {
+                  console.log('🔧 Running network diagnostics...');
+                  const networkOK = await runNetworkDiagnostics();
+                  if (networkOK) {
+                    alert('✅ Network diagnostics passed!\n\nTrying to reload content...');
+                    setLoading(true);
+                    setUserPreferences({...userPreferences});
+                  } else {
+                    alert('❌ Network issues detected!\n\nCheck your internet connection or firewall settings.');
+                  }
+                }}
+              >
+                🔧 Network Test
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => {
+                  console.log('🔄 Retrying content fetch...');
+                  setLoading(true);
+                  // Trigger a re-fetch by updating a dependency
+                  setUserPreferences({...userPreferences});
+                }}
+              >
+                🔄 Retry API Calls
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+              >
+                🗑️ Clear Cache & Reload
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* API Status Debug Panel (Development Only) */}
+        {import.meta.env.DEV && (
+          <div className="fixed bottom-4 right-4 bg-black/80 text-white p-3 rounded-lg text-xs z-50 max-w-xs">
+            <div className="flex items-center space-x-2 mb-2">
+              <div className={`w-2 h-2 rounded-full ${
+                apiStatus === 'connected' ? 'bg-green-500' : 
+                apiStatus === 'fallback' ? 'bg-yellow-500' : 
+                apiStatus === 'testing' ? 'bg-blue-500' : 'bg-red-500'
+              }`} />
+              <span className="font-medium">
+                {apiStatus === 'connected' ? 'API Connected' :
+                 apiStatus === 'fallback' ? 'Using Fallback Data' :
+                 apiStatus === 'testing' ? 'Testing API...' : 'API Error'}
+              </span>
+            </div>
+            <div className="space-y-1 text-xs opacity-75">
+              <div>Hero: {heroContent.length} items</div>
+              <div>Trending: {trendingContent.length} items</div>
+              <div>Languages: {Object.keys(moviesByLanguage).length}</div>
+              <div>Premium: {premiumContent.length} items</div>
+            </div>
+            {apiStatus === 'fallback' && (
+              <div className="mt-2 text-xs text-yellow-300">
+                Network issue detected. Using offline content.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* User-friendly notification for API issues */}
+        {!import.meta.env.DEV && apiStatus === 'fallback' && (
+          <div className="px-4 py-2 bg-yellow-50 border-l-4 border-yellow-400 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-yellow-400">⚠️</span>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  We're having trouble connecting to our servers. Don't worry - we're showing you great content from our offline collection!
+                </p>
+              </div>
             </div>
           </div>
         )}
