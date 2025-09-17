@@ -47,7 +47,8 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
   const [trendingContent, setTrendingContent] = useState<any[]>([]);
   const [premiumContent, setPremiumContent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [apiStatus, setApiStatus] = useState<'testing' | 'connected' | 'fallback' | 'error'>('testing');
+  const [apiStatus, setApiStatus] = useState<'testing' | 'connected' | 'fallback' | 'error' | 'blocked'>('testing');
+  const [isRegionallyBlocked, setIsRegionallyBlocked] = useState(false);
 
   // Debug logging for content state
   useEffect(() => {
@@ -177,12 +178,21 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
           
           setHeroContent(heroData);
           setApiStatus('connected');
-        } catch (error) {
+        } catch (error: any) {
           console.error('❌ Failed to fetch hero content from API:', error);
+          
+          // Check if it's regional blocking
+          if (error.message.includes('Regional blocking') || error.message.includes('All') && error.message.includes('endpoints failed')) {
+            console.warn('🚫 Regional blocking detected');
+            setIsRegionallyBlocked(true);
+            setApiStatus('blocked');
+          } else {
+            setApiStatus('fallback');
+          }
+          
           console.log('🔄 Using fallback content for hero banner');
           heroData = getFallbackContent(5);
           setHeroContent(heroData);
-          setApiStatus('fallback');
         }
         
         // 2. Fetch content for each selected language
@@ -672,6 +682,17 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               >
                 🔧 Network Test
               </Button>
+              {isRegionallyBlocked && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    alert('🌐 Regional Blocking Detected!\n\nTo access the latest content:\n\n1. Use a VPN service\n2. Try a different network\n3. Contact your ISP\n\nCurrently showing curated offline content.');
+                  }}
+                >
+                  🌐 VPN Info
+                </Button>
+              )}
               <Button 
                 size="sm" 
                 variant="outline" 
@@ -704,11 +725,13 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
             <div className="flex items-center space-x-2 mb-2">
               <div className={`w-2 h-2 rounded-full ${
                 apiStatus === 'connected' ? 'bg-green-500' : 
+                apiStatus === 'blocked' ? 'bg-orange-500' :
                 apiStatus === 'fallback' ? 'bg-yellow-500' : 
                 apiStatus === 'testing' ? 'bg-blue-500' : 'bg-red-500'
               }`} />
               <span className="font-medium">
                 {apiStatus === 'connected' ? 'API Connected' :
+                 apiStatus === 'blocked' ? 'Regional Blocking' :
                  apiStatus === 'fallback' ? 'Using Fallback Data' :
                  apiStatus === 'testing' ? 'Testing API...' : 'API Error'}
               </span>
@@ -719,7 +742,12 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
               <div>Languages: {Object.keys(moviesByLanguage).length}</div>
               <div>Premium: {premiumContent.length} items</div>
             </div>
-            {apiStatus === 'fallback' && (
+            {apiStatus === 'blocked' && (
+              <div className="mt-2 text-xs text-orange-300">
+                Regional blocking detected. Multiple endpoints tried.
+              </div>
+            )}
+            {apiStatus === 'fallback' && !isRegionallyBlocked && (
               <div className="mt-2 text-xs text-yellow-300">
                 Network issue detected. Using offline content.
               </div>
@@ -728,7 +756,25 @@ const Home: React.FC<HomeProps> = ({ userPreferences, onNavigateToProfile, onNav
         )}
 
         {/* User-friendly notification for API issues */}
-        {!import.meta.env.DEV && apiStatus === 'fallback' && (
+        {!import.meta.env.DEV && isRegionallyBlocked && (
+          <div className="px-4 py-3 bg-blue-50 border-l-4 border-blue-400 mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-blue-400">🌐</span>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-blue-700 font-medium">
+                  Content Loading Optimized for Your Region
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  We've detected network restrictions in your area. We're showing you our curated collection of popular movies and shows. For the latest releases, you may need to use a VPN or try again later.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {!import.meta.env.DEV && apiStatus === 'fallback' && !isRegionallyBlocked && (
           <div className="px-4 py-2 bg-yellow-50 border-l-4 border-yellow-400 mb-4">
             <div className="flex">
               <div className="flex-shrink-0">

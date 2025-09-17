@@ -1,7 +1,15 @@
 import axios from 'axios';
 
 const TMDB_API_KEY = 'a920b40b16bf83b682220e54023bfb5c';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+
+// Multiple API endpoints to handle regional blocking
+const TMDB_ENDPOINTS = [
+  'https://api.themoviedb.org/3',           // Primary endpoint
+  'https://api.tmdb.org/3',                 // Alternative domain
+  'https://cors-anywhere.herokuapp.com/https://api.themoviedb.org/3', // CORS proxy
+  'https://api.allorigins.win/raw?url=https://api.themoviedb.org/3',   // AllOrigins proxy
+];
+
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 export interface TMDBMovie {
@@ -99,11 +107,87 @@ const GENRE_MAP: { [key: string]: number } = {
 
 class TMDBService {
   private apiKey: string;
-  private baseURL: string;
+  private endpoints: string[];
+  private currentEndpointIndex: number;
 
   constructor() {
     this.apiKey = TMDB_API_KEY;
-    this.baseURL = TMDB_BASE_URL;
+    this.endpoints = TMDB_ENDPOINTS;
+    this.currentEndpointIndex = 0;
+  }
+
+  private getCurrentBaseURL(): string {
+    return this.endpoints[this.currentEndpointIndex];
+  }
+
+  private switchToNextEndpoint(): boolean {
+    this.currentEndpointIndex++;
+    if (this.currentEndpointIndex >= this.endpoints.length) {
+      this.currentEndpointIndex = 0;
+      return false; // We've tried all endpoints
+    }
+    console.log(`🔄 Switching to endpoint ${this.currentEndpointIndex + 1}: ${this.getCurrentBaseURL()}`);
+    return true;
+  }
+
+  // Try request with all available endpoints to handle regional blocking
+  private async requestWithMultipleEndpoints<T>(endpoint: string, params: Record<string, any> = {}): Promise<T> {
+    console.log(`🌐 Trying multiple endpoints for regional blocking bypass: ${endpoint}`);
+
+    const originalIndex = this.currentEndpointIndex;
+    let attempts = 0;
+
+    do {
+      const currentURL = this.getCurrentBaseURL();
+      console.log(`🔗 Attempt ${attempts + 1}: ${currentURL}`);
+
+      try {
+        const response = await axios.get(`${currentURL}${endpoint}`, {
+          params: {
+            api_key: this.apiKey,
+            ...params
+          },
+          timeout: 15000,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Origin': 'https://sonyliv.com'
+          }
+        });
+
+        if (response.data && (response.data.results !== undefined || response.data.genres !== undefined || response.data.id !== undefined)) {
+          console.log(`✅ SUCCESS with endpoint: ${currentURL}`);
+          return response.data;
+        }
+
+        throw new Error('Invalid response structure');
+
+      } catch (error: any) {
+        console.warn(`❌ Failed with ${currentURL}:`, error.message);
+
+        // If it's a network/blocking error, try next endpoint
+        if (['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'ECONNABORTED'].includes(error.code) ||
+          error.response?.status === 403 || error.response?.status === 429) {
+
+          attempts++;
+          if (this.switchToNextEndpoint()) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Brief delay
+            continue;
+          } else {
+            // Reset to original endpoint
+            this.currentEndpointIndex = originalIndex;
+            break;
+          }
+        } else {
+          // Non-network error, don't try other endpoints
+          throw error;
+        }
+      }
+    } while (attempts < this.endpoints.length);
+
+    // Reset to original endpoint
+    this.currentEndpointIndex = originalIndex;
+    throw new Error(`All ${this.endpoints.length} endpoints failed for ${endpoint}. Regional blocking detected.`);
   }
 
   private async request<T>(endpoint: string, params: Record<string, any> = {}, retries: number = 5): Promise<T> {
@@ -153,13 +237,23 @@ class TMDBService {
       }
     ];
 
+    // First, try the multi-endpoint approach for regional blocking
+    try {
+      console.log(`🌐 Attempting multi-endpoint request for regional blocking bypass...`);
+      return await this.requestWithMultipleEndpoints(endpoint, params);
+    } catch (multiEndpointError: any) {
+      console.warn(`⚠️ Multi-endpoint approach failed:`, multiEndpointError.message);
+      console.log(`🔄 Falling back to aggressive retry strategy...`);
+    }
+
+    // Fallback to aggressive retry with current endpoint
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const strategy = strategies[attempt - 1] || strategies[strategies.length - 1];
 
-        console.log(`📡 Attempt ${attempt}/${retries} - Strategy: ${strategy.timeout / 1000}s timeout`);
+        console.log(`📡 Retry ${attempt}/${retries} - Strategy: ${strategy.timeout / 1000}s timeout`);
 
-        const response = await axios.get(`${this.baseURL}${endpoint}`, {
+        const response = await axios.get(`${this.getCurrentBaseURL()}${endpoint}`, {
           params: {
             api_key: this.apiKey,
             ...params
@@ -652,7 +746,7 @@ class TMDBService {
       try {
         console.log(`🧪 ${config.name} (${config.timeout / 1000}s timeout)...`);
 
-        const response = await axios.get(`${this.baseURL}/movie/popular`, {
+        const response = await axios.get(`${this.getCurrentBaseURL()}/movie/popular`, {
           params: { api_key: this.apiKey, page: 1 },
           timeout: config.timeout,
           headers: {
